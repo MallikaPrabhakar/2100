@@ -1,7 +1,7 @@
 # COP290-A2-Maze-Generator
 Maze generator for assignment 2 of COP290
 
-####References??
+#### References??
 //snake genre
 https://github.com/dragonfi/SnakeMaze
 https://github.com/DaKeiser/pyProject_Snake

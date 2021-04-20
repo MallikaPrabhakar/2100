@@ -1,6 +1,10 @@
 # COP290-A2-Maze-Generator
 Maze generator for assignment 2 of COP290
 
+## current motive:
+Create 4-5 static mazes
+
+
 #### References??
 //snake genre
 https://github.com/dragonfi/SnakeMaze

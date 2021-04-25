@@ -13,6 +13,6 @@ struct Fonts
 
 	static int initFonts();
 };
-void displayText(SDL_Renderer *renderer, char *text, TTF_Font *font, int x, int y);
+void displayText(SDL_Renderer *renderer, char *text, TTF_Font *font, int x, int y, SDL_Color color = Theme::textColor);
 
 #endif

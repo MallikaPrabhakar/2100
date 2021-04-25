@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include "constants.hpp"
 
-class theme
+class Theme
 {
 public:
 	static SDL_Color textColor, backgroundColor;

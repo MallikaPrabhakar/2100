@@ -31,19 +31,24 @@ int main()
 		return 1;
 	}
 
-	if (Fonts::initFonts() != 0)
+	int fonts = Fonts::initFonts();
+	if (fonts != 0)
 	{
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
-		printf("Could not load all or some fonts, error encountered: %s\n", SDL_GetError());
+		printf("Could not load font %d, error encountered: %s\n", fonts, SDL_GetError());
 		return 1;
 	}
-	theme::setTheme(1, renderer);
+	Theme::setTheme(1, renderer);
 	int player = whichPlayer(renderer);
-	if (player == 0)
+	if (player == -1)
 		handleExit(renderer, window);
 	if (player == 1)
-		serverMenu(renderer);
+	{
+		int ret = serverMenu(renderer);
+		if (ret == -1)
+			handleExit(renderer, window);
+	}
 	else if (player == 2)
 		clientMenu(renderer);
 }

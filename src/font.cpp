@@ -17,9 +17,9 @@ int Fonts::initFonts()
 	return 0;
 }
 
-void displayText(SDL_Renderer *renderer, char *text, TTF_Font *font, int x, int y)
+void displayText(SDL_Renderer *renderer, char *text, TTF_Font *font, int x, int y, SDL_Color color)
 {
-	SDL_Surface *surface = TTF_RenderText_Solid(font, text, theme::textColor);
+	SDL_Surface *surface = TTF_RenderText_Solid(font, text, color);
 	SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 	SDL_Rect pos;

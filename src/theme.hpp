@@ -9,7 +9,7 @@ class theme
 public:
 	static SDL_Color textColor, backgroundColor;
 
-	static void setTheme(int themeNumber);
+	static void setTheme(int themeNumber, SDL_Renderer *renderer);
 };
 
 #endif

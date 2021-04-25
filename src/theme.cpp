@@ -2,7 +2,7 @@
 
 SDL_Color theme::textColor, theme::backgroundColor;
 
-void theme::setTheme(int themeNumber)
+void theme::setTheme(int themeNumber, SDL_Renderer *renderer)
 {
 	switch (themeNumber)
 	{
@@ -17,6 +17,7 @@ void theme::setTheme(int themeNumber)
 		break;
 
 	default:
-		break;
+		return;
 	}
+	SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
 }

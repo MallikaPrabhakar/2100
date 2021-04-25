@@ -1,24 +1,27 @@
 objects = main.o menu.o theme.o font.o
 LIBS = -lSDL2_ttf -lpthread
 
-build: game
+run: install
+	./game
+
+install: game
 
 game: $(objects)
-	gcc $(objects) -o game `sdl2-config --libs` $(LIBS)
+	g++ $(objects) -o game `sdl2-config --libs` $(LIBS)
 
 main.o: main.cpp
-	gcc -c `sdl2-config --cflags` main.cpp
+	g++ -c `sdl2-config --cflags` main.cpp
 
-menu.o: menu.cpp
-	gcc -c `sdl2-config --cflags` menu.cpp
+menu.o: menu.cpp menu.hpp
+	g++ -c `sdl2-config --cflags` menu.cpp
 
-theme.o: theme.cpp
-	gcc -c `sdl2-config --cflags` theme.cpp
+theme.o: theme.cpp theme.hpp
+	g++ -c `sdl2-config --cflags` theme.cpp
 
-font.o: font.cpp
-	gcc -c `sdl2-config --cflags` font.cpp
+font.o: font.cpp font.hpp
+	g++ -c `sdl2-config --cflags` font.cpp
 
 clean:
 	rm -f $(objects)
 
-all: clean build
+reinstall: clean install

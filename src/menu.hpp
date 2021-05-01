@@ -5,7 +5,10 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include "theme.hpp"
 #include "font.hpp"
+#include "map.hpp"
+#include "networking.hpp"
 
 using namespace std;
 

@@ -5,6 +5,11 @@
 #include <SDL_ttf.h>
 #include "theme.hpp"
 
+#define FONTSCOUNT 3
+#define FONT_LIGHT "../assets/fonts/Roboto-Light.ttf"
+#define FONT_MEDIUM "../assets/fonts/Roboto-Medium.ttf"
+#define FONT_BOLD "../assets/fonts/Roboto-Bold.ttf"
+
 using namespace std;
 
 struct Fonts

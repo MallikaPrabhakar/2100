@@ -1,8 +1,8 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include "constants.hpp"
 #include "font.hpp"
 #include "theme.hpp"
+#include "networking.hpp"
 #include "menu.hpp"
 
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
@@ -45,10 +45,20 @@ int main()
 		handleExit(renderer, window);
 	if (player == 1)
 	{
-		int ret = serverMenu(renderer);
+		int ret = Network::makeServer();
+		if (ret != 0)
+		{
+			printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
+			handleExit(renderer, window);
+		}
+		ret = serverMenu(renderer);
 		if (ret == -1)
 			handleExit(renderer, window);
 	}
 	else if (player == 2)
-		clientMenu(renderer);
+	{
+		int ret = clientMenu(renderer);
+		if (ret == -1)
+			handleExit(renderer, window);
+	}
 }

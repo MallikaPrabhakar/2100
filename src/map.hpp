@@ -5,6 +5,8 @@
 
 using namespace std;
 
+#define MAP_SIZE 50
+
 struct Map
 {
 	static vector<vector<int>> map;

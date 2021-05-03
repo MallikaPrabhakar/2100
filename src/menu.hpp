@@ -12,8 +12,17 @@
 
 using namespace std;
 
-int whichPlayer(SDL_Renderer *renderer);
-int serverMenu(SDL_Renderer *renderer);
-int clientMenu(SDL_Renderer *renderer);
+struct Menu
+{
+	static SDL_Renderer *renderer;
+	static vector<string> serverMenuLines, clientMenuLines, lines;
+	static int mode, key;
+	static bool done, isServer;
+
+	static int whichPlayer();
+	static int displayLines();
+	static int serverMenu();
+	static int clientMenu();
+};
 
 #endif

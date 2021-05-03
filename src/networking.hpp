@@ -19,6 +19,8 @@ struct Network
 	static int makeServer();
 	static int makeClient();
 	static int lookForClient();
+	static int sendRequest(sockaddr_in &to, char *msg, int size);
+	static int recvRequest(sockaddr_in &from, char *ret, int size);
 };
 
 #endif

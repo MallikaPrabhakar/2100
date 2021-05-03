@@ -1,6 +1,6 @@
 #include "map.hpp"
 
-vector<vector<int>> Map::map(50, vector<int>(50, 0));
+vector<vector<int>> Map::map(MAP_SIZE, vector<int>(MAP_SIZE, 0));
 
 void Map::setMap(int mapNumber)
 {
@@ -28,18 +28,13 @@ void Map::setMap(int mapNumber)
         map[16][15]=1;
         map[17][15]=1;
         map[18][15]=1;
-        map[-16][-16]=1;
-        map[-16][-17]=1;
-        map[-16][-18]=1;
-        map[-16][-19]=1;
-        map[-17][-16]=1;
-        map[-18][-16]=1;
-        map[-19][-16]=1;
-
-
-
-
-
+        map[33][33]=1;
+        map[33][32]=1;
+        map[33][31]=1;
+        map[33][30]=1;
+        map[32][33]=1;
+        map[31][33]=1;
+        map[30][33]=1;
         break;
 
     default:
@@ -51,19 +46,19 @@ void Map::setMap(int mapNumber)
 
 bool Map::setBasicMap()
 {
-    if (map.size()==50 && map[0].size()==50)
+    if (map.size()==MAP_SIZE && map[0].size()==MAP_SIZE)
     {
         //boundary wall creation
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < MAP_SIZE; i++)
         {
             if (i==0 || i==49)
             {
-                map[i]=vector<int>(50,1);
+                map[i]=vector<int>(MAP_SIZE,1);
             }
             else
             {
                 map[i][0]=1;
-                map[i][-1]=1;
+                map[i][49]=1;
             }         
             
         }
@@ -76,12 +71,12 @@ bool Map::setBasicMap()
         map[2][3]=2;
 
         //home base for player 2
-        map[-2][-2]=3;
-        map[-2][-3]=3;
-        map[-2][-4]=3;
-        map[-3][-2]=3;
-        map[-3][-3]=3;
-        map[-3][-4]=3;
+        map[48][48]=3;
+        map[48][47]=3;
+        map[48][46]=3;
+        map[47][48]=3;
+        map[47][47]=3;
+        map[47][46]=3;
 
         return true;
     }

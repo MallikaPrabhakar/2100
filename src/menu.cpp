@@ -1,6 +1,11 @@
 #include "menu.hpp"
 
-int whichPlayer(SDL_Renderer *renderer)
+vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, Menu::lines;
+int Menu::mode, Menu::key;
+bool Menu::done, Menu::isServer;
+SDL_Renderer *Menu::renderer;
+
+int Menu::whichPlayer()
 {
 	SDL_Event e;
 	while (true)
@@ -27,11 +32,7 @@ int whichPlayer(SDL_Renderer *renderer)
 	}
 }
 
-vector<string> serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, lines;
-int mode;
-bool done;
-
-int displayLines(SDL_Renderer *renderer, SDL_Keycode key, bool isServer)
+int Menu::displayLines()
 {
 	if (key == SDLK_ESCAPE)
 		return -1;
@@ -49,8 +50,14 @@ int displayLines(SDL_Renderer *renderer, SDL_Keycode key, bool isServer)
 			mode = 2;
 			lines = {" ", " ", " ", " "}; // @TODO: after maps decided
 		}
-		else if (key == SDLK_c && !done)
+		else if (key == SDLK_c)
+		{
 			mode = 3 + isServer;
+			if (isServer)
+				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR 5s)";
+			else
+				lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR 5s)";
+		}
 		else if (key == SDLK_p)
 			return 1;
 	}
@@ -83,11 +90,11 @@ int displayLines(SDL_Renderer *renderer, SDL_Keycode key, bool isServer)
 	else if (mode == 4)
 	{
 		int ret = Network::lookForClient();
-		mode = 0;
 		if (ret == 0)
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (DONE)", done = true;
 		else
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (RETRY)";
+		mode = 0;
 		lines = serverMenuLines;
 	}
 	SDL_RenderClear(renderer);
@@ -104,44 +111,42 @@ int displayLines(SDL_Renderer *renderer, SDL_Keycode key, bool isServer)
 	return 0;
 }
 
-int serverMenu(SDL_Renderer *renderer)
+int Menu::serverMenu()
 {
 	SDL_Event e;
 	mode = 0;
-	done = false;
+	done = false, isServer = true;
 	lines = serverMenuLines;
-	int key = -1;
 	while (true)
 	{
+		key = -1;
 		if (SDL_PollEvent(&e))
 			if (e.type == SDL_QUIT)
 				return -1;
 			else if (e.type == SDL_KEYDOWN)
 				key = e.key.keysym.sym;
-		int ret = displayLines(renderer, key, true);
+		int ret = displayLines();
 		if (ret != 0)
 			return ret;
-		key = -1;
 	}
 }
 
-int clientMenu(SDL_Renderer *renderer)
+int Menu::clientMenu()
 {
 	SDL_Event e;
 	mode = 0;
-	done = false;
+	done = false, isServer = false;
 	lines = clientMenuLines;
-	int key = -1;
 	while (true)
 	{
+		key = -1;
 		if (SDL_PollEvent(&e))
 			if (e.type == SDL_QUIT)
 				return -1;
 			else if (e.type == SDL_KEYDOWN)
 				key = e.key.keysym.sym;
-		int ret = displayLines(renderer, key, false);
+		int ret = displayLines();
 		if (ret != 0)
 			return ret;
-		key = -1;
 	}
 }

@@ -4,6 +4,8 @@
 #include "theme.hpp"
 #include "networking.hpp"
 #include "menu.hpp"
+#include "map.hpp"
+#include "game.hpp"
 
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 {
@@ -15,7 +17,7 @@ void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 
 int main()
 {
-	SDL_Window *window = SDL_CreateWindow("Menu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 960, 0);
+	SDL_Window *window = SDL_CreateWindow("Menu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
 	if (window == NULL)
 	{
 		printf("Could not create window, error encountered: %s\n", SDL_GetError());
@@ -40,7 +42,8 @@ int main()
 		return 1;
 	}
 	Theme::setTheme(1, renderer);
-	int player = whichPlayer(renderer);
+	Menu::renderer = renderer;
+	int player = Menu::whichPlayer();
 	if (player == -1)
 		handleExit(renderer, window);
 	if (player == 1)
@@ -51,13 +54,17 @@ int main()
 			printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
 			handleExit(renderer, window);
 		}
-		ret = serverMenu(renderer);
+		ret = Menu::serverMenu();
 		if (ret == -1)
 			handleExit(renderer, window);
+		Map::setMap();
+		Game::renderInit(renderer, true);
+		Game::loopGame();
+		handleExit(renderer, window);
 	}
 	else if (player == 2)
 	{
-		int ret = clientMenu(renderer);
+		int ret = Menu::clientMenu();
 		if (ret == -1)
 			handleExit(renderer, window);
 	}

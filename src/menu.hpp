@@ -9,6 +9,7 @@
 #include "font.hpp"
 #include "map.hpp"
 #include "networking.hpp"
+#include "game.hpp"
 
 using namespace std;
 
@@ -17,7 +18,6 @@ struct Menu
 	static SDL_Renderer *renderer;
 	static vector<string> serverMenuLines, clientMenuLines, lines;
 	static int mode, key;
-	static bool done, isServer;
 
 	static int whichPlayer();
 	static int displayLines();

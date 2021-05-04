@@ -2,7 +2,6 @@
 
 vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, Menu::lines;
 int Menu::mode, Menu::key;
-bool Menu::done, Menu::isServer;
 SDL_Renderer *Menu::renderer;
 
 int Menu::whichPlayer()
@@ -27,7 +26,7 @@ int Menu::whichPlayer()
 				}
 		SDL_RenderClear(renderer);
 		char text[] = "PLAYER [1] OR PLAYER [2]?";
-		displayText(renderer, text, Fonts::fonts[2], 500, 440);
+		displayText(renderer, text, Fonts::fonts[2], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 2 - OFFSET);
 		SDL_RenderPresent(renderer);
 	}
 }
@@ -45,21 +44,29 @@ int Menu::displayLines()
 			mode = 1;
 			lines = {"THEME [1]", "THEME [2]"};
 		}
-		else if (key == SDLK_m && isServer)
+		else if (key == SDLK_m && Game::isServer)
 		{
 			mode = 2;
 			lines = {" ", " ", " ", " "}; // @TODO: after maps decided
 		}
 		else if (key == SDLK_c)
 		{
-			mode = 3 + isServer;
-			if (isServer)
+			mode = 3 + Game::isServer;
+			if (Game::isServer)
 				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR 5s)";
 			else
 				lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR 5s)";
 		}
 		else if (key == SDLK_p)
-			return 1;
+		{
+			// if (!Network::done)
+			// 	if (Game::isServer)
+			// 		lines[2] = "[C]ONNECT WITH CLIENT (*)";
+			// 	else
+			// 		lines[1] = "[C]ONNECT TO SERVER (*)";
+			// else
+				return 1;
+		}
 	}
 	else if (mode == 1)
 	{
@@ -68,7 +75,7 @@ int Menu::displayLines()
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
 			mode = 0;
-			lines = (isServer ? serverMenuLines : clientMenuLines);
+			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 		}
 	}
 	else if (mode == 2)
@@ -82,7 +89,7 @@ int Menu::displayLines()
 		int ret = Network::makeClient();
 		mode = 0;
 		if (ret == 0)
-			clientMenuLines[1] = "[C]ONNECT TO SERVER (DONE)", done = true;
+			clientMenuLines[1] = "[C]ONNECT TO SERVER (DONE)", Network::done = true;
 		else
 			clientMenuLines[1] = "[C]ONNECT TO SERVER (RETRY)";
 		lines = clientMenuLines;
@@ -91,7 +98,7 @@ int Menu::displayLines()
 	{
 		int ret = Network::lookForClient();
 		if (ret == 0)
-			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (DONE)", done = true;
+			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (DONE)", Network::done = true;
 		else
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (RETRY)";
 		mode = 0;
@@ -104,7 +111,7 @@ int Menu::displayLines()
 		if (!lines[i].empty())
 		{
 			strcpy(msg, lines[i].c_str());
-			displayText(renderer, msg, Fonts::fonts[1], 500, 240 + 50 * i);
+			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 4 + OFFSET * i);
 		}
 	}
 	SDL_RenderPresent(renderer);
@@ -115,7 +122,8 @@ int Menu::serverMenu()
 {
 	SDL_Event e;
 	mode = 0;
-	done = false, isServer = true;
+	Network::done = false, Game::isServer = true;
+	Map::setMap();
 	lines = serverMenuLines;
 	while (true)
 	{
@@ -135,7 +143,7 @@ int Menu::clientMenu()
 {
 	SDL_Event e;
 	mode = 0;
-	done = false, isServer = false;
+	Network::done = false, Game::isServer = false;
 	lines = clientMenuLines;
 	while (true)
 	{

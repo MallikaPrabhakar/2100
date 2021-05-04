@@ -32,6 +32,7 @@ int main()
 		printf("Could not create renderer, error encountered: %s\n", SDL_GetError());
 		return 1;
 	}
+	SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	int fonts = Fonts::initFonts();
 	if (fonts != 0)
@@ -54,18 +55,13 @@ int main()
 			printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
 			handleExit(renderer, window);
 		}
-		ret = Menu::serverMenu();
-		if (ret == -1)
+		if (Menu::serverMenu() == -1)
 			handleExit(renderer, window);
-		Map::setMap();
-		Game::renderInit(renderer, true);
-		Game::loopGame();
-		handleExit(renderer, window);
 	}
 	else if (player == 2)
-	{
-		int ret = Menu::clientMenu();
-		if (ret == -1)
+		if (Menu::clientMenu() == -1)
 			handleExit(renderer, window);
-	}
+	Game::renderInit(renderer);
+	Game::loopGame();
+	handleExit(renderer, window);
 }

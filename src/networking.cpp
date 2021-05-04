@@ -2,6 +2,7 @@
 
 int Network::sockfd;
 sockaddr_in Network::Server, Network::Client;
+bool Network::done;
 
 int Network::initServer()
 {

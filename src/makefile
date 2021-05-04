@@ -10,10 +10,10 @@ install: game
 game: $(objects)
 	g++ $(objects) -o game `sdl2-config --libs` $(LIBS)
 
-main.o: main.cpp font.o theme.o menu.o
+main.o: main.cpp font.o theme.o networking.o menu.o map.o game.o
 	g++ -c $(CFLAGS) main.cpp
 
-menu.o: menu.cpp menu.hpp font.o
+menu.o: menu.cpp menu.hpp theme.o font.o map.o networking.o game.o
 	g++ -c $(CFLAGS) menu.cpp
 
 theme.o: theme.cpp theme.hpp
@@ -28,7 +28,7 @@ networking.o: networking.cpp networking.hpp
 map.o: map.cpp map.hpp
 	g++ -c $(CFLAGS) map.cpp
 
-game.o: game.cpp game.hpp map.o
+game.o: game.cpp game.hpp map.o theme.o networking.o
 	g++ -c $(CFLAGS) game.cpp
 
 clean:

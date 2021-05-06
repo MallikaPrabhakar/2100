@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#define MAP_SIZE 50
+#define MAP_SIZE 25
 
 struct Map
 {

@@ -8,7 +8,7 @@ run: install
 install: game
 
 game: $(objects)
-	g++ $(objects) -o game `sdl2-config --libs` $(LIBS)
+	g++ -g $(objects) -o game `sdl2-config --libs` $(LIBS)
 
 main.o: main.cpp font.o theme.o networking.o menu.o map.o game.o
 	g++ -c $(CFLAGS) main.cpp
@@ -25,7 +25,7 @@ font.o: font.cpp font.hpp theme.o
 networking.o: networking.cpp networking.hpp
 	g++ -c $(CFLAGS) networking.cpp
 
-map.o: map.cpp map.hpp
+map.o: map.cpp map.hpp networking.o
 	g++ -c $(CFLAGS) map.cpp
 
 game.o: game.cpp game.hpp map.o theme.o networking.o

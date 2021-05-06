@@ -53,9 +53,9 @@ int Menu::displayLines()
 		{
 			mode = 3 + Game::isServer;
 			if (Game::isServer)
-				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR 5s)";
+				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
 			else
-				lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR 5s)";
+				lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
 		}
 		else if (key == SDLK_p)
 		{

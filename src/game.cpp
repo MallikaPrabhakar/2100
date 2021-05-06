@@ -1,18 +1,28 @@
 #include "game.hpp"
 
-SDL_Texture *Game::mapTexture, *Game::tile, *Game::me, *Game::opponent, *Game::wall, *Game::myBase, *Game::oppBase;
+SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet;
 SDL_Renderer *Game::renderer;
-SDL_Rect Game::mapRect, Game::myPos, Game::oppPos;
-sockaddr_in *Game::from;
-bool Game::isServer;
+SDL_Rect Game::mapRect;
+bool Game::isServer, Game::shoot;
+Game::Player Game::me, Game::opponent;
+int Game::newBulletID;
+unordered_map<int, Game::Bullet *> Game::bullets;
 
 void Game::renderInit(SDL_Renderer *sourceRenderer)
 {
 	renderer = sourceRenderer;
 	if (isServer)
-		from = &Network::Client;
+	{
+		Network::other = Network::Client;
+		if (Map::sendMap() != 0)
+			return;
+	}
 	else
-		from = &Network::Server;
+	{
+		Network::other = Network::Server;
+		if (Map::recvMap() != 0)
+			return;
+	}
 	mapRect.x = 0;
 	mapRect.y = 0;
 	mapRect.w = WINDOW_WIDTH;
@@ -26,24 +36,25 @@ void Game::renderInit(SDL_Renderer *sourceRenderer)
 	for (int i = 0; i < MAP_SIZE; ++i)
 		for (int j = 0; j < MAP_SIZE; ++j)
 		{
-			rect.x = TILE_SIZE * j;
-			rect.y = TILE_SIZE * i;
+			rect.x = TILE_SIZE * i;
+			rect.y = TILE_SIZE * j;
 			if (Map::map[i][j] == 0)
 				SDL_RenderCopy(renderer, tile, NULL, &rect);
 			else if (Map::map[i][j] == 1)
 				SDL_RenderCopy(renderer, wall, NULL, &rect);
 			else if (Map::map[i][j] == 2)
-				SDL_RenderCopy(renderer, (isServer ? myBase : oppBase), NULL, &rect);
+				SDL_RenderCopy(renderer, me.base, NULL, &rect);
 			else if (Map::map[i][j] == 3)
-				SDL_RenderCopy(renderer, (!isServer ? myBase : oppBase), NULL, &rect);
+				SDL_RenderCopy(renderer, opponent.base, NULL, &rect);
 		}
 	SDL_SetRenderTarget(renderer, NULL);
 
-	myPos.w = myPos.h = myPos.x = myPos.y = TILE_SIZE;
-	oppPos.w = oppPos.h = TILE_SIZE;
-	oppPos.x = oppPos.y = TILE_SIZE * (MAP_SIZE - 2);
+	me.dir = opponent.dir = 0;
+	me.pos.w = me.pos.h = me.pos.x = me.pos.y = TILE_SIZE;
+	opponent.pos.w = opponent.pos.h = TILE_SIZE;
+	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
 	if (!isServer)
-		swap(myPos, oppPos);
+		swap(me, opponent);
 }
 
 // @TODO: home bases need to be changed to look contrasting
@@ -51,23 +62,26 @@ void Game::initTextures()
 {
 	SDL_Surface *surface;
 
-	surface = IMG_Load(string(Theme::themeSource + "tile.jpg").c_str());
+	surface = IMG_Load((Theme::themeSource + "tile.jpg").c_str());
 	tile = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load(string(Theme::themeSource + (isServer ? "player1.jpg" : "player2.jpg")).c_str());
-	me = SDL_CreateTextureFromSurface(renderer, surface);
+	surface = IMG_Load((Theme::themeSource + "player1.jpg").c_str());
+	me.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load(string(Theme::themeSource + (!isServer ? "player1.jpg" : "player2.jpg")).c_str());
-	opponent = SDL_CreateTextureFromSurface(renderer, surface);
+	surface = IMG_Load((Theme::themeSource + "player2.jpg").c_str());
+	opponent.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load(string(Theme::themeSource + "wall.jpg").c_str());
+	surface = IMG_Load((Theme::themeSource + "wall.jpg").c_str());
 	wall = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load(string(Theme::themeSource + (isServer ? "home1.jpg" : "home2.jpg")).c_str());
-	myBase = SDL_CreateTextureFromSurface(renderer, surface);
+	surface = IMG_Load((Theme::themeSource + "home1.jpg").c_str());
+	me.base = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load(string(Theme::themeSource + (!isServer ? "home1.jpg" : "home2.jpg")).c_str());
-	oppBase = SDL_CreateTextureFromSurface(renderer, surface);
+	surface = IMG_Load((Theme::themeSource + "home2.jpg").c_str());
+	opponent.base = SDL_CreateTextureFromSurface(renderer, surface);
+
+	surface = IMG_Load((Theme::themeSource + "bullet.jpg").c_str());
+	bullet = SDL_CreateTextureFromSurface(renderer, surface);
 }
 
 void Game::loopGame()
@@ -75,49 +89,96 @@ void Game::loopGame()
 	SDL_Event e;
 	while (true)
 	{
+		shoot = false;
 		if (SDL_PollEvent(&e))
 			if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
 				return;
 			else if (e.type == SDL_KEYDOWN)
 				handleKeyEvents(e.key.keysym.sym);
+		if (sendInfo() != 0)
+			return;
+		if (recvInfo() != 0)
+			return;
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
-		SDL_RenderCopy(renderer, opponent, NULL, &oppPos);
-		SDL_RenderCopy(renderer, me, NULL, &myPos);
+		SDL_RenderCopyEx(renderer, opponent.texture, NULL, &opponent.pos, opponent.dir * 90, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(renderer, me.texture, NULL, &me.pos, me.dir * 90, NULL, SDL_FLIP_NONE);
+		displayBullets();
 		SDL_RenderPresent(renderer);
+		SDL_Delay(DELAY);
 	}
 }
 
 void Game::handleKeyEvents(SDL_Keycode key)
 {
-	if (key == SDLK_UP || key == SDLK_w)
+	if (key == SDLK_SPACE)
 	{
-		if (Map::map[myPos.x / TILE_SIZE][myPos.y / TILE_SIZE - 1] != 1)
-			myPos.y -= TILE_SIZE;
+		bullets[newBulletID] = new Bullet(me.pos.x, me.pos.y, me.dir);
+		shoot = true;
+	}
+	else if (key == SDLK_UP || key == SDLK_w)
+	{
+		me.dir = 0;
+		if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] != 1)
+			me.pos.y -= TILE_SIZE;
 	}
 	else if (key == SDLK_RIGHT || key == SDLK_d)
 	{
-		if (Map::map[myPos.x / TILE_SIZE + 1][myPos.y / TILE_SIZE] != 1)
-			myPos.x += TILE_SIZE;
+		me.dir = 1;
+		if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] != 1)
+			me.pos.x += TILE_SIZE;
 	}
 	else if (key == SDLK_DOWN || key == SDLK_s)
 	{
-		if (Map::map[myPos.x / TILE_SIZE][myPos.y / TILE_SIZE + 1] != 1)
-			myPos.y += TILE_SIZE;
+		me.dir = 2;
+		if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] != 1)
+			me.pos.y += TILE_SIZE;
 	}
 	else if (key == SDLK_LEFT || key == SDLK_a)
 	{
-		if (Map::map[myPos.x / TILE_SIZE - 1][myPos.y / TILE_SIZE] != 1)
-			myPos.x -= TILE_SIZE;
+		me.dir = 3;
+		if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] != 1)
+			me.pos.x -= TILE_SIZE;
 	}
 }
 
-// @TODO: will implement after sendMap and recvMap functions implemented
-void Game::handleBullets()
+int Game::recvInfo()
 {
-	char *msg;
-	if (Network::recvRequest(*from, msg, MSG_SIZE) != 0)
-		return;
-	if (*msg == '0')
-		return;
+	char info[MSG_SIZE];
+	if (Network::recvRequest(info, MSG_SIZE) == 4)
+		return 4;
+	opponent.pos.x = info[0] * TILE_SIZE;
+	opponent.pos.y = info[1] * TILE_SIZE;
+	opponent.dir = info[2];
+	if (info[3] == 1)
+		bullets[newBulletID++] = new Bullet(info[4] * TILE_SIZE, info[5] * TILE_SIZE, info[6]);
+	return 0;
+}
+
+int Game::sendInfo()
+{
+	char info[MSG_SIZE] = {0};
+	info[0] = me.pos.x / TILE_SIZE;
+	info[1] = me.pos.y / TILE_SIZE;
+	info[2] = me.dir;
+	if (shoot)
+	{
+		info[3] = 1;
+		info[4] = bullets[newBulletID]->pos.x / TILE_SIZE;
+		info[5] = bullets[newBulletID]->pos.y / TILE_SIZE;
+		info[6] = bullets[newBulletID++]->dir;
+	}
+	return Network::sendRequest(info, MSG_SIZE);
+}
+
+void Game::displayBullets()
+{
+	for (auto it = bullets.begin(); it != bullets.end();)
+	{
+		it->second->updatePos();
+		if (Map::map[it->second->pos.x / TILE_SIZE][it->second->pos.y / TILE_SIZE] == 1)
+			bullets.erase(it++);
+		else
+			SDL_RenderCopyEx(renderer, bullet, NULL, &it->second->pos, it->second->dir * 90, NULL, SDL_FLIP_NONE), it++;
+	}
 }

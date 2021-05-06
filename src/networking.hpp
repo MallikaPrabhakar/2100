@@ -7,12 +7,13 @@
 #include <netinet/in.h>
 
 #define PORT 4263 // equals GAME on keypad
+#define TIMEOUT 5
 
 struct Network
 {
 	static const int SOCKSIZE = sizeof(sockaddr_in);
 	static int sockfd;
-	static sockaddr_in Server, Client;
+	static sockaddr_in Server, Client, other;
 	static bool done;
 	/*
 	 * error codes
@@ -27,8 +28,8 @@ struct Network
 	static int makeServer();
 	static int makeClient();
 	static int lookForClient();
-	static int sendRequest(sockaddr_in &to, char *msg, int size);
-	static int recvRequest(sockaddr_in &from, char *ret, int size);
+	static int sendRequest(char *msg, int size);
+	static int recvRequest(char *ret, int size);
 };
 
 #endif

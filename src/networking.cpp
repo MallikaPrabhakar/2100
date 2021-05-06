@@ -1,7 +1,7 @@
 #include "networking.hpp"
 
 int Network::sockfd;
-sockaddr_in Network::Server, Network::Client;
+sockaddr_in Network::Server, Network::Client, Network::other;
 bool Network::done;
 
 int Network::initServer()
@@ -30,7 +30,7 @@ int Network::makeClient()
 		return 1;
 	socklen_t size = SOCKSIZE;
 	timeval tv;
-	tv.tv_sec = 5;
+	tv.tv_sec = TIMEOUT;
 	tv.tv_usec = 0;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == -1)
 		return 5;
@@ -47,7 +47,7 @@ int Network::lookForClient()
 	char ret[5];
 	socklen_t size = SOCKSIZE;
 	timeval tv;
-	tv.tv_sec = 5;
+	tv.tv_sec = TIMEOUT;
 	tv.tv_usec = 0;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == -1)
 		return 5;
@@ -59,17 +59,17 @@ int Network::lookForClient()
 	return 0;
 }
 
-int Network::sendRequest(sockaddr_in &to, char *msg, int size)
+int Network::sendRequest(char *msg, int size)
 {
-	if (sendto(sockfd, msg, size, MSG_CONFIRM, (const sockaddr *)&to, SOCKSIZE) == -1)
+	if (sendto(sockfd, msg, size, MSG_CONFIRM, (const sockaddr *)&other, SOCKSIZE) == -1)
 		return 3;
 	return 0;
 }
 
-int Network::recvRequest(sockaddr_in &from, char *ret, int size)
+int Network::recvRequest(char *ret, int size)
 {
 	socklen_t socklen;
-	if (recvfrom(sockfd, ret, size, MSG_WAITALL, (sockaddr *)&from, &socklen) == -1)
+	if (recvfrom(sockfd, ret, size, MSG_WAITALL, (sockaddr *)&other, &socklen) == -1)
 		return 4;
 	return 0;
 }

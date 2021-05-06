@@ -44,6 +44,7 @@ int main()
 	}
 	Theme::setTheme(1, renderer);
 	Menu::renderer = renderer;
+	// @TODO: insert while loop and exitMenu function in menu.?pp
 	int player = Menu::whichPlayer();
 	if (player == -1)
 		handleExit(renderer, window);

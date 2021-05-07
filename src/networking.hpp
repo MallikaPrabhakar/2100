@@ -3,8 +3,8 @@
 
 #include <cstring>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define PORT 4263 // equals GAME on keypad
 #define TIMEOUT 5
@@ -12,8 +12,8 @@
 struct Network
 {
 	static const int SOCKSIZE = sizeof(sockaddr_in);
-	static int sockfd;
-	static sockaddr_in Server, Client, other;
+	static int sockfd, othersockfd;
+	static sockaddr_in Server, other;
 	static bool done;
 	/*
 	 * error codes
@@ -24,11 +24,11 @@ struct Network
 	 * 5 = unable to set timeout
 	*/
 
-	static int initServer();
+	static void initServer(const char *ip = NULL);
 	static int makeServer();
-	static int makeClient();
+	static int makeClient(const char *ip);
 	static int lookForClient();
-	static int sendRequest(char *msg, int size);
+	static int sendRequest(const char *msg, int size);
 	static int recvRequest(char *ret, int size);
 };
 

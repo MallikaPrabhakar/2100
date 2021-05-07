@@ -55,16 +55,18 @@ int Menu::displayLines()
 			if (Game::isServer)
 				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
 			else
-				lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
+			{
+				lines = {"ENTER IP ADDRESS", "127.0.0.1"};
+			}
 		}
 		else if (key == SDLK_p)
 		{
-			// if (!Network::done)
-			// 	if (Game::isServer)
-			// 		lines[2] = "[C]ONNECT WITH CLIENT (*)";
-			// 	else
-			// 		lines[1] = "[C]ONNECT TO SERVER (*)";
-			// else
+			if (!Network::done)
+				if (Game::isServer)
+					lines[2] = "[C]ONNECT WITH CLIENT (*)";
+				else
+					lines[1] = "[C]ONNECT TO SERVER (*)";
+			else
 				return 1;
 		}
 	}
@@ -86,13 +88,29 @@ int Menu::displayLines()
 	}
 	else if (mode == 3)
 	{
-		int ret = Network::makeClient();
-		mode = 0;
-		if (ret == 0)
-			clientMenuLines[1] = "[C]ONNECT TO SERVER (DONE)", Network::done = true;
-		else
-			clientMenuLines[1] = "[C]ONNECT TO SERVER (RETRY)";
-		lines = clientMenuLines;
+		if ((key >= SDLK_0 && key <= SDLK_9) || key == SDLK_PERIOD)
+			lines[1] += key;
+		else if (key == SDLK_BACKSPACE)
+		{
+			if (lines[1].empty())
+			{
+				mode = 0;
+				lines = clientMenuLines;
+			}
+			else
+				lines[1].pop_back();
+		}
+		else if (key == SDLK_RETURN)
+		{
+			lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
+			int ret = Network::makeClient(lines[1].c_str());
+			mode = 0;
+			if (ret == 0)
+				clientMenuLines[1] = "[C]ONNECT TO SERVER (DONE)", Network::done = true;
+			else
+				clientMenuLines[1] = "[C]ONNECT TO SERVER (RETRY) " + to_string(ret);
+			lines = clientMenuLines;
+		}
 	}
 	else if (mode == 4)
 	{
@@ -100,7 +118,7 @@ int Menu::displayLines()
 		if (ret == 0)
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (DONE)", Network::done = true;
 		else
-			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (RETRY)";
+			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (RETRY) " + to_string(ret);
 		mode = 0;
 		lines = serverMenuLines;
 	}

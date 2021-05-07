@@ -11,18 +11,8 @@ unordered_map<int, Game::Bullet *> Game::bullets;
 void Game::renderInit(SDL_Renderer *sourceRenderer)
 {
 	renderer = sourceRenderer;
-	if (isServer)
-	{
-		Network::other = Network::Client;
-		if (Map::sendMap() != 0)
-			return;
-	}
-	else
-	{
-		Network::other = Network::Server;
-		if (Map::recvMap() != 0)
-			return;
-	}
+	if ((isServer ? Map::sendMap() : Map::recvMap()) != 0)
+		return;
 	mapRect.x = 0;
 	mapRect.y = 0;
 	mapRect.w = WINDOW_WIDTH;

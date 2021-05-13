@@ -23,6 +23,7 @@ struct Menu
 	static int displayLines();
 	static int serverMenu();
 	static int clientMenu();
+	static int exitMenu();
 };
 
 #endif

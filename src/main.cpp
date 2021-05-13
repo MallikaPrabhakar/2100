@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <unistd.h>
 #include "font.hpp"
 #include "theme.hpp"
 #include "networking.hpp"
@@ -9,6 +10,8 @@
 
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 {
+	close(Network::othersockfd);
+	close(Network::sockfd);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

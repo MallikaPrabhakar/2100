@@ -1,12 +1,44 @@
 #include "game.hpp"
 
-SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet;
+SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
-bool Game::isServer, Game::shoot;
+bool Game::isServer;
 Game::Player Game::me, Game::opponent;
-int Game::newBulletID;
-unordered_map<int, Game::Bullet *> Game::bullets;
+int Game::flagsOnMap, Game::bombsOnMap, Game::healthsOnMap, Game::reloadTime;
+unordered_set<Game::Bullet *> Game::bullets;
+
+Game::Object::Object(int dir, SDL_Texture *texture)
+{
+	this->texture = texture;
+	this->dir = dir;
+}
+
+Game::Player::Player() : Object(0, NULL)
+{
+	pos.w = pos.h = TILE_SIZE;
+	dir = flags = 0;
+	health = MAX_HEALTH;
+}
+
+Game::Bullet::Bullet(int x, int y, int dir, SDL_Texture *texture) : Object(dir, texture)
+{
+	pos.h = pos.w = TILE_SIZE;
+	pos.x = x;
+	pos.y = y;
+}
+
+void Game::Object::updatePos()
+{
+	if (dir == 0)
+		pos.y -= TILE_SIZE;
+	else if (dir == 1)
+		pos.x += TILE_SIZE;
+	else if (dir == 2)
+		pos.y += TILE_SIZE;
+	else if (dir == 3)
+		pos.x -= TILE_SIZE;
+}
 
 void Game::renderInit(SDL_Renderer *sourceRenderer)
 {
@@ -32,16 +64,10 @@ void Game::renderInit(SDL_Renderer *sourceRenderer)
 				SDL_RenderCopy(renderer, tile, NULL, &rect);
 			else if (Map::map[i][j] == 1)
 				SDL_RenderCopy(renderer, wall, NULL, &rect);
-			else if (Map::map[i][j] == 2)
-				SDL_RenderCopy(renderer, me.base, NULL, &rect);
-			else if (Map::map[i][j] == 3)
-				SDL_RenderCopy(renderer, opponent.base, NULL, &rect);
 		}
 	SDL_SetRenderTarget(renderer, NULL);
 
-	me.dir = opponent.dir = 0;
-	me.pos.w = me.pos.h = me.pos.x = me.pos.y = TILE_SIZE;
-	opponent.pos.w = opponent.pos.h = TILE_SIZE;
+	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
 	if (!isServer)
 		swap(me, opponent);
@@ -64,14 +90,17 @@ void Game::initTextures()
 	surface = IMG_Load((Theme::themeSource + "wall.jpg").c_str());
 	wall = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "home1.jpg").c_str());
-	me.base = SDL_CreateTextureFromSurface(renderer, surface);
-
-	surface = IMG_Load((Theme::themeSource + "home2.jpg").c_str());
-	opponent.base = SDL_CreateTextureFromSurface(renderer, surface);
-
 	surface = IMG_Load((Theme::themeSource + "bullet.jpg").c_str());
 	bullet = SDL_CreateTextureFromSurface(renderer, surface);
+
+	surface = IMG_Load((Theme::themeSource + "bomb.jpg").c_str());
+	bomb = SDL_CreateTextureFromSurface(renderer, surface);
+
+	surface = IMG_Load((Theme::themeSource + "health.jpg").c_str());
+	health = SDL_CreateTextureFromSurface(renderer, surface);
+
+	surface = IMG_Load((Theme::themeSource + "flag.jpg").c_str());
+	flag = SDL_CreateTextureFromSurface(renderer, surface);
 }
 
 void Game::loopGame()
@@ -79,12 +108,15 @@ void Game::loopGame()
 	SDL_Event e;
 	while (true)
 	{
-		shoot = false;
+		if (reloadTime)
+			--reloadTime;
 		if (SDL_PollEvent(&e))
+		{
 			if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
 				return;
 			else if (e.type == SDL_KEYDOWN)
 				handleKeyEvents(e.key.keysym.sym);
+		}
 		if (sendInfo() != 0)
 			return;
 		if (recvInfo() != 0)
@@ -101,33 +133,37 @@ void Game::loopGame()
 
 void Game::handleKeyEvents(SDL_Keycode key)
 {
-	if (key == SDLK_SPACE)
+	if (key == SDLK_SPACE && !reloadTime)
 	{
-		bullets[newBulletID] = new Bullet(me.pos.x, me.pos.y, me.dir);
-		shoot = true;
+		bullets.insert(new Bullet(me.pos.x, me.pos.y, me.dir, bullet));
+		reloadTime = RELOAD;
 	}
 	else if (key == SDLK_UP || key == SDLK_w)
 	{
-		me.dir = 0;
-		if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] != 1)
+		if (me.dir != 0)
+			me.dir = 0;
+		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] != 1)
 			me.pos.y -= TILE_SIZE;
 	}
 	else if (key == SDLK_RIGHT || key == SDLK_d)
 	{
-		me.dir = 1;
-		if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] != 1)
+		if (me.dir != 1)
+			me.dir = 1;
+		else if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] != 1)
 			me.pos.x += TILE_SIZE;
 	}
 	else if (key == SDLK_DOWN || key == SDLK_s)
 	{
-		me.dir = 2;
-		if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] != 1)
+		if (me.dir != 2)
+			me.dir = 2;
+		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] != 1)
 			me.pos.y += TILE_SIZE;
 	}
 	else if (key == SDLK_LEFT || key == SDLK_a)
 	{
-		me.dir = 3;
-		if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] != 1)
+		if (me.dir != 3)
+			me.dir = 3;
+		else if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] != 1)
 			me.pos.x -= TILE_SIZE;
 	}
 }
@@ -141,7 +177,7 @@ int Game::recvInfo()
 	opponent.pos.y = info[1] * TILE_SIZE;
 	opponent.dir = info[2];
 	if (info[3] == 1)
-		bullets[newBulletID++] = new Bullet(info[4] * TILE_SIZE, info[5] * TILE_SIZE, info[6]);
+		bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
 	return 0;
 }
 
@@ -151,13 +187,8 @@ int Game::sendInfo()
 	info[0] = me.pos.x / TILE_SIZE;
 	info[1] = me.pos.y / TILE_SIZE;
 	info[2] = me.dir;
-	if (shoot)
-	{
+	if (reloadTime == RELOAD)
 		info[3] = 1;
-		info[4] = bullets[newBulletID]->pos.x / TILE_SIZE;
-		info[5] = bullets[newBulletID]->pos.y / TILE_SIZE;
-		info[6] = bullets[newBulletID++]->dir;
-	}
 	return Network::sendRequest(info, MSG_SIZE);
 }
 
@@ -165,10 +196,23 @@ void Game::displayBullets()
 {
 	for (auto it = bullets.begin(); it != bullets.end();)
 	{
-		it->second->updatePos();
-		if (Map::map[it->second->pos.x / TILE_SIZE][it->second->pos.y / TILE_SIZE] == 1)
+		(**it).updatePos();
+		if (Map::map[(**it).pos.x / TILE_SIZE][(**it).pos.y / TILE_SIZE] == 1)
 			bullets.erase(it++);
 		else
-			SDL_RenderCopyEx(renderer, bullet, NULL, &it->second->pos, it->second->dir * 90, NULL, SDL_FLIP_NONE), it++;
+			SDL_RenderCopyEx(renderer, bullet, NULL, &(**it).pos, (**it).dir * 90, NULL, SDL_FLIP_NONE), it++;
 	}
 }
+
+void Game::updateSpawnables()
+{
+}
+
+/*
+	@TODO:
+	1. health++, health--, flags
+	2. collisions - 1. + bullets
+	3. opponent == wall
+	4. game end -> death/first to max flags
+	5. maps
+*/

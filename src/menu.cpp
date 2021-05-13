@@ -37,8 +37,6 @@ int Menu::displayLines()
 		return -1;
 	if (mode == 0)
 	{
-		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
-			return -1;
 		if (key == SDLK_t)
 		{
 			mode = 1;
@@ -102,7 +100,6 @@ int Menu::displayLines()
 		}
 		else if (key == SDLK_RETURN)
 		{
-			lines[1] = "[C]ONNECT TO SERVER (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
 			int ret = Network::makeClient(lines[1].c_str());
 			mode = 0;
 			if (ret == 0)
@@ -175,4 +172,10 @@ int Menu::clientMenu()
 		if (ret != 0)
 			return ret;
 	}
+}
+
+// @TODO:
+int Menu::exitMenu()
+{
+	
 }

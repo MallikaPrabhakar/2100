@@ -37,10 +37,13 @@ int Network::lookForClient()
 	socklen_t socklen;
 	if ((othersockfd = accept(sockfd, (sockaddr *)&other, &socklen)) == -1)
 		return 6;
-	char ret[5];
-	if (recvRequest(ret, 5) == 4)
+	char ret;
+	if (recvRequest(&ret, 1) == 4)
 		return 4;
-	if (sendRequest("done", 5) == 3)
+	if (ret != 'i')
+		return 4;
+	ret = 'd';
+	if (sendRequest(&ret, 1) == 3)
 		return 3;
 	return 0;
 }
@@ -59,15 +62,18 @@ int Network::makeClient(const char *ip)
 	if (connect(sockfd, (sockaddr *)&Server, SOCKSIZE) == -1)
 		return 3;
 	other = Server;
-	if (sendRequest("init", 5) == 3)
+	char ret = 'i';
+	if (sendRequest(&ret, 1) == 3)
 		return 3;
-	char ret[5];
-	return recvRequest(ret, 5);
+	recvRequest(&ret, 1);
+	if (ret != 'd')
+		return 4;
+	return 0;
 }
 
 int Network::sendRequest(const char *msg, int size)
 {
-	if (sendto(othersockfd, msg, size, MSG_CONFIRM, (const sockaddr *)&other, SOCKSIZE) == -1)
+	if (sendto(othersockfd, msg, size, MSG_NOSIGNAL, (const sockaddr *)&other, SOCKSIZE) == -1)
 		return 3;
 	return 0;
 }

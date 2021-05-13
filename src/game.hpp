@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <unordered_map>
+#include <unordered_set>
 #include <SDL.h>
 #include <SDL_image.h>
 #include "map.hpp"
@@ -16,49 +16,46 @@
 #define TILE_SIZE 38
 #define MSG_SIZE 100
 #define DELAY 20
+#define RELOAD 10
+#define MAX_HEALTH 5
 
 struct Game
 {
-	struct Player
+	struct Object
 	{
-		SDL_Texture *texture, *base;
-		SDL_Rect pos;
-		int dir;
-	};
-
-	struct Bullet
-	{
+		SDL_Texture *texture;
 		SDL_Rect pos;
 		int dir;
 
-		Bullet(int x, int y, int dir)
-		{
-			pos.h = pos.w = TILE_SIZE;
-			pos.x = x;
-			pos.y = y;
-			this->dir = dir;
-		}
+		Object(int dir, SDL_Texture *texture);
 
-		void updatePos()
-		{
-			if (dir == 0)
-				pos.y -= TILE_SIZE;
-			else if (dir == 1)
-				pos.x += TILE_SIZE;
-			else if (dir == 2)
-				pos.y += TILE_SIZE;
-			else if (dir == 3)
-				pos.x -= TILE_SIZE;
-		}
+		void updatePos();
 	};
 
-	static SDL_Texture *mapTexture, *tile, *wall, *bullet;
+	struct Bullet : Object
+	{
+		Bullet(int x, int y, int dir, SDL_Texture *texture);
+	};
+
+	struct Player : Object
+	{
+		SDL_Rect pos;
+		int dir, health, flags;
+
+		Player();
+	};
+
+	struct Spawn : Object
+	{
+	};
+
+	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
 	static SDL_Renderer *renderer;
 	static SDL_Rect mapRect;
-	static bool isServer, shoot;
+	static bool isServer;
 	static Player me, opponent;
-	static int newBulletID;
-	static unordered_map<int, Bullet*> bullets;
+	static int flagsOnMap, bombsOnMap, healthsOnMap, reloadTime;
+	static unordered_set<Bullet *> bullets;
 
 	static void renderInit(SDL_Renderer *sourceRenderer);
 	static void initTextures();
@@ -67,6 +64,8 @@ struct Game
 	static int recvInfo();
 	static int sendInfo();
 	static void displayBullets();
+	static void updateSpawnables();
+	static void handleCollisions();
 };
 
 #endif

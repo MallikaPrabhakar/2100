@@ -28,6 +28,14 @@ Game::Bullet::Bullet(int x, int y, int dir, SDL_Texture *texture) : Object(dir, 
 	pos.y = y;
 }
 
+Game::Spawn::Spawn(int x, int y, int affects, SDL_Texture *texture) : Object(0, texture)
+{
+	pos.h = pos.w = TILE_SIZE;
+	pos.x = x;
+	pos.y = y;
+	healthDelta = affects;
+}
+
 void Game::Object::updatePos()
 {
 	if (dir == 0)
@@ -38,6 +46,11 @@ void Game::Object::updatePos()
 		pos.y += TILE_SIZE;
 	else if (dir == 3)
 		pos.x -= TILE_SIZE;
+}
+
+void Game::Object::renderObject()
+{
+	SDL_RenderCopyEx(renderer, texture, NULL, &pos, dir * 90, NULL, SDL_FLIP_NONE);
 }
 
 void Game::renderInit(SDL_Renderer *sourceRenderer)
@@ -73,7 +86,6 @@ void Game::renderInit(SDL_Renderer *sourceRenderer)
 		swap(me, opponent);
 }
 
-// @TODO: home bases need to be changed to look contrasting
 void Game::initTextures()
 {
 	SDL_Surface *surface;
@@ -123,8 +135,8 @@ void Game::loopGame()
 			return;
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
-		SDL_RenderCopyEx(renderer, opponent.texture, NULL, &opponent.pos, opponent.dir * 90, NULL, SDL_FLIP_NONE);
-		SDL_RenderCopyEx(renderer, me.texture, NULL, &me.pos, me.dir * 90, NULL, SDL_FLIP_NONE);
+		opponent.renderObject();
+		me.renderObject();
 		displayBullets();
 		SDL_RenderPresent(renderer);
 		SDL_Delay(DELAY);
@@ -200,7 +212,7 @@ void Game::displayBullets()
 		if (Map::map[(**it).pos.x / TILE_SIZE][(**it).pos.y / TILE_SIZE] == 1)
 			bullets.erase(it++);
 		else
-			SDL_RenderCopyEx(renderer, bullet, NULL, &(**it).pos, (**it).dir * 90, NULL, SDL_FLIP_NONE), it++;
+			(**it).renderObject(), it++;
 	}
 }
 

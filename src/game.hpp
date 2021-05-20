@@ -30,6 +30,7 @@ struct Game
 		Object(int dir, SDL_Texture *texture);
 
 		void updatePos();
+		void renderObject();
 	};
 
 	struct Bullet : Object
@@ -39,14 +40,16 @@ struct Game
 
 	struct Player : Object
 	{
-		SDL_Rect pos;
-		int dir, health, flags;
+		int health, flags;
 
 		Player();
 	};
 
 	struct Spawn : Object
 	{
+		int healthDelta;
+
+		Spawn(int x, int y, int affects, SDL_Texture *texture);
 	};
 
 	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;

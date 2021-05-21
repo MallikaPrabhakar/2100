@@ -52,7 +52,7 @@ struct Game
 		Spawn(int x, int y, int affects, SDL_Texture *texture);
 	};
 
-	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
+	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag, *home1, *home2;
 	static SDL_Renderer *renderer;
 	static SDL_Rect mapRect;
 	static bool isServer;

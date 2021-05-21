@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
+SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag, *Game::home1, *Game::home2;
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
@@ -73,7 +73,12 @@ void Game::renderInit(SDL_Renderer *sourceRenderer)
 		{
 			rect.x = TILE_SIZE * i;
 			rect.y = TILE_SIZE * j;
-			if (Map::map[i][j] == 0)
+
+			if (i==1 && j==1)
+				SDL_RenderCopy(renderer, home1, NULL, &rect);
+			else if (i==24 && j==24)
+				SDL_RenderCopy(renderer, home2, NULL, &rect);
+			else if (Map::map[i][j] == 0)
 				SDL_RenderCopy(renderer, tile, NULL, &rect);
 			else if (Map::map[i][j] == 1)
 				SDL_RenderCopy(renderer, wall, NULL, &rect);
@@ -90,29 +95,56 @@ void Game::initTextures()
 {
 	SDL_Surface *surface;
 
-	surface = IMG_Load((Theme::themeSource + "tile.jpg").c_str());
+	//normal tiles- movable space
+	surface = IMG_Load((Theme::themeSource + "tile.tif").c_str());
 	tile = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "player1.jpg").c_str());
+	//player1 (me is player 1)
+	surface = IMG_Load((Theme::themeSource + "player1.tif").c_str());
 	me.texture = SDL_CreateTextureFromSurface(renderer, surface);
+/*
+	//player 1 at home base 1
+	surface = IMG_Load((Theme::themeSource + "player1home1.tif").c_str());
+	player1home1.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "player2.jpg").c_str());
+	//player 1 at home base 2
+	surface = IMG_Load((Theme::themeSource + "player1home2.tif").c_str());
+	player1home2.texture = SDL_CreateTextureFromSurface(renderer, surface);
+*/
+	//player 2 (opponent is player 2)
+	surface = IMG_Load((Theme::themeSource + "player2.tif").c_str());
 	opponent.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "wall.jpg").c_str());
+/*
+	//player 2 at home base 1
+	surface = IMG_Load((Theme::themeSource + "player2home1.tif").c_str());
+	player2home1.texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+	//player 2 at home base 2
+	surface = IMG_Load((Theme::themeSource + "player2home2.tif").c_str());
+	player2home2.texture = SDL_CreateTextureFromSurface(renderer, surface);
+*/
+
+	//wall- barrier
+	surface = IMG_Load((Theme::themeSource + "wall.tif").c_str());
 	wall = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "bullet.jpg").c_str());
+	//bullet- @TODO currently pi/2 radian rotated
+	surface = IMG_Load((Theme::themeSource + "bullet.tif").c_str());
 	bullet = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "bomb.jpg").c_str());
+	//bomb- drastic health decreaser
+	surface = IMG_Load((Theme::themeSource + "bomb.tif").c_str());
 	bomb = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "health.jpg").c_str());
+	//health- health increaser
+	surface = IMG_Load((Theme::themeSource + "health.tif").c_str());
 	health = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "flag.jpg").c_str());
+	//flag- for point calculation and winning rules
+	surface = IMG_Load((Theme::themeSource + "flag.tif").c_str());
 	flag = SDL_CreateTextureFromSurface(renderer, surface);
+
 }
 
 void Game::loopGame()

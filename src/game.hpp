@@ -64,8 +64,8 @@ struct Game
 	static void initTextures();
 	static void loopGame();
 	static void handleKeyEvents(SDL_Keycode key);
-	static int recvInfo();
-	static int sendInfo();
+	static int recvPlayerInfo();
+	static int sendPlayerInfo();
 	static void displayBullets();
 	static void updateSpawnables();
 	static void handleCollisions();

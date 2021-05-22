@@ -4,13 +4,7 @@ vector<vector<int>> Map::map(MAP_SIZE, vector<int>(MAP_SIZE, 0));
 
 void Map::setMap(int mapNumber)
 {
-	bool validMap = setBasicMap();
-	//need to edit the if part out later
-	if (!validMap)
-	{
-		//initialisation error
-		return;
-	}
+	setBasicMap();
 
 	//actual map setup
 	switch (mapNumber)
@@ -334,35 +328,20 @@ void Map::setMap(int mapNumber)
 	}
 }
 
-bool Map::setBasicMap()
+void Map::setBasicMap()
 {
-	//map[i][j] id ith column and jth row
-	if (map.size() == MAP_SIZE && map[0].size() == MAP_SIZE)
+	//boundary wall creation
+	for (int i = 0; i < MAP_SIZE; i++)
 	{
-		//boundary wall creation
-		for (int i = 0; i < MAP_SIZE; i++)
+		if (i == 0 || i == 24)
 		{
-			if (i == 0 || i == 24)
-			{
-				map[i] = vector<int>(MAP_SIZE, 1);
-			}
-			else
-			{
-				map[i][0] = 1;
-				map[i][24] = 1;
-			}
+			map[i] = vector<int>(MAP_SIZE, 1);
 		}
-		//starting point of player 1 :home1
-		map[1][1] = 2;
-
-		//starting point of player 2 :home2
-		map[23][23] = 3;
-
-		return true;
-	}
-	else
-	{
-		return false;
+		else
+		{
+			map[i][0] = 1;
+			map[i][24] = 1;
+		}
 	}
 }
 

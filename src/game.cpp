@@ -76,7 +76,7 @@ void Game::renderInit(SDL_Renderer *sourceRenderer)
 
 			if (i==1 && j==1)
 				SDL_RenderCopy(renderer, home1, NULL, &rect);
-			else if (i==24 && j==24)
+			else if (i==23 && j==23)
 				SDL_RenderCopy(renderer, home2, NULL, &rect);
 			else if (Map::map[i][j] == 0)
 				SDL_RenderCopy(renderer, tile, NULL, &rect);
@@ -102,6 +102,10 @@ void Game::initTextures()
 	//player1 (me is player 1)
 	surface = IMG_Load((Theme::themeSource + "player1.tif").c_str());
 	me.texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+	surface = IMG_Load((Theme::themeSource + "home1.tif").c_str());
+	home1 = SDL_CreateTextureFromSurface(renderer, surface);
+
 /*
 	//player 1 at home base 1
 	surface = IMG_Load((Theme::themeSource + "player1home1.tif").c_str());
@@ -115,7 +119,10 @@ void Game::initTextures()
 	surface = IMG_Load((Theme::themeSource + "player2.tif").c_str());
 	opponent.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
-/*
+	surface = IMG_Load((Theme::themeSource + "home2.tif").c_str());
+	home2 = SDL_CreateTextureFromSurface(renderer, surface);
+
+	/*
 	//player 2 at home base 1
 	surface = IMG_Load((Theme::themeSource + "player2home1.tif").c_str());
 	player2home1.texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -149,6 +156,7 @@ void Game::initTextures()
 
 void Game::loopGame()
 {
+	// initSpawnables();
 	SDL_Event e;
 	while (true)
 	{
@@ -161,10 +169,16 @@ void Game::loopGame()
 			else if (e.type == SDL_KEYDOWN)
 				handleKeyEvents(e.key.keysym.sym);
 		}
-		if (sendInfo() != 0)
+		if (sendPlayerInfo() != 0)
 			return;
-		if (recvInfo() != 0)
+		if (recvPlayerInfo() != 0)
 			return;
+		// handleCollisions();
+		// if (isServer) updateSpawnables();
+		// if (sendSpawnInfo() != 0)
+		// 	return;
+		// if (recvSpawnInfo() != 0)
+		// 	return;
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
 		opponent.renderObject();
@@ -186,33 +200,33 @@ void Game::handleKeyEvents(SDL_Keycode key)
 	{
 		if (me.dir != 0)
 			me.dir = 0;
-		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] != 1)
+		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] <= 0)
 			me.pos.y -= TILE_SIZE;
 	}
 	else if (key == SDLK_RIGHT || key == SDLK_d)
 	{
 		if (me.dir != 1)
 			me.dir = 1;
-		else if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] != 1)
+		else if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] <= 0)
 			me.pos.x += TILE_SIZE;
 	}
 	else if (key == SDLK_DOWN || key == SDLK_s)
 	{
 		if (me.dir != 2)
 			me.dir = 2;
-		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] != 1)
+		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] <= 0)
 			me.pos.y += TILE_SIZE;
 	}
 	else if (key == SDLK_LEFT || key == SDLK_a)
 	{
 		if (me.dir != 3)
 			me.dir = 3;
-		else if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] != 1)
+		else if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] <= 0)
 			me.pos.x -= TILE_SIZE;
 	}
 }
 
-int Game::recvInfo()
+int Game::recvPlayerInfo()
 {
 	char info[MSG_SIZE];
 	if (Network::recvRequest(info, MSG_SIZE) == 4)
@@ -225,7 +239,7 @@ int Game::recvInfo()
 	return 0;
 }
 
-int Game::sendInfo()
+int Game::sendPlayerInfo()
 {
 	char info[MSG_SIZE] = {0};
 	info[0] = me.pos.x / TILE_SIZE;
@@ -252,11 +266,15 @@ void Game::updateSpawnables()
 {
 }
 
+void Game::handleCollisions()
+{
+}
+
 /*
 	@TODO:
-	1. health++, health--, flags
+	1. health -1, bomb -2, flags -3
 	2. collisions - 1. + bullets
 	3. opponent == wall
-	4. game end -> death/first to max flags
-	5. maps
+	4. display bars
+	5. gameEnd function
 */

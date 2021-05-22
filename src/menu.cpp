@@ -1,11 +1,26 @@
 #include "menu.hpp"
 
-vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, Menu::lines;
-int Menu::mode, Menu::key;
+vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, Menu::exitLines, Menu::lines;
 SDL_Renderer *Menu::renderer;
+
+void Menu::displayLines()
+{
+	SDL_RenderClear(renderer);
+	for (int i = 0; i < lines.size(); ++i)
+	{
+		char *msg = new char[lines[i].size() + 1];
+		if (!lines[i].empty())
+		{
+			strcpy(msg, lines[i].c_str());
+			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 4 + OFFSET * i);
+		}
+	}
+	SDL_RenderPresent(renderer);
+}
 
 int Menu::whichPlayer()
 {
+	lines = {"PLAYER [1] OR PLAYER [2]?", "[Q]UIT"};
 	SDL_Event e;
 	while (true)
 	{
@@ -16,6 +31,7 @@ int Menu::whichPlayer()
 				switch (e.key.keysym.sym)
 				{
 				case SDLK_ESCAPE:
+				case SDLK_q:
 					return -1;
 				case SDLK_1:
 					return 1;
@@ -24,32 +40,32 @@ int Menu::whichPlayer()
 				default:
 					continue;
 				}
-		SDL_RenderClear(renderer);
-		char text[] = "PLAYER [1] OR PLAYER [2]?";
-		displayText(renderer, text, Fonts::fonts[2], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 2 - OFFSET);
-		SDL_RenderPresent(renderer);
+		displayLines();
 	}
 }
 
-int Menu::displayLines()
+void Menu::handleMenuKeyEvents(int &mode, int key)
 {
 	if (key == SDLK_ESCAPE)
-		return -1;
-	if (mode == 0)
+	{
+		mode = QUIT;
+		return;
+	}
+	if (mode == MAIN_MENU)
 	{
 		if (key == SDLK_t)
 		{
-			mode = 1;
+			mode = THEME;
 			lines = {"THEME [1]", "THEME [2]"};
 		}
 		else if (key == SDLK_m && Game::isServer)
 		{
-			mode = 2;
-			lines = {" ", " ", " ", " "}; // @TODO: after maps decided
+			mode = MAP;
+			lines = {"(1) WINDMILL", "(2) TUNNELS", "(3) BAMBOO", "(4) RUINS", "(5) HONEYCOMB", "(6) RANDOM"};
 		}
 		else if (key == SDLK_c)
 		{
-			mode = 3 + Game::isServer;
+			mode = Game::isServer ? LOOK : CONNECT;
 			if (Game::isServer)
 				lines[2] = "[C]ONNECT WITH CLIENT (PLEASE WAIT FOR " + to_string(TIMEOUT) + "s)";
 			else
@@ -65,26 +81,36 @@ int Menu::displayLines()
 				else
 					lines[1] = "[C]ONNECT TO SERVER (*)";
 			else
-				return 1;
+			{
+				mode = PLAY;
+				return;
+			}
 		}
 	}
-	else if (mode == 1)
+	else if (mode == THEME)
 	{
 		if (key >= SDLK_1 && key <= SDLK_0 + THEMECOUNT)
 			Theme::setTheme(key - SDLK_0, renderer);
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
-			mode = 0;
+			mode = MAIN_MENU;
 			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 		}
 	}
-	else if (mode == 2)
+	else if (mode == MAP)
 	{
-		// @TODO: after maps decided
-		mode = 0;
-		lines = serverMenuLines;
+		if (key >= SDLK_1 && key <= SDLK_6)
+		{
+			Map::setMap(key - SDLK_1);
+			// @TODO: display preview
+		}
+		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
+		{
+			mode = MAIN_MENU;
+			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
+		}
 	}
-	else if (mode == 3)
+	else if (mode == CONNECT)
 	{
 		if ((key >= SDLK_0 && key <= SDLK_9) || key == SDLK_PERIOD)
 			lines[1] += key;
@@ -92,7 +118,7 @@ int Menu::displayLines()
 		{
 			if (lines[1].empty())
 			{
-				mode = 0;
+				mode = MAIN_MENU;
 				lines = clientMenuLines;
 			}
 			else
@@ -101,7 +127,7 @@ int Menu::displayLines()
 		else if (key == SDLK_RETURN)
 		{
 			int ret = Network::makeClient(lines[1].c_str());
-			mode = 0;
+			mode = MAIN_MENU;
 			if (ret == 0)
 				clientMenuLines[1] = "[C]ONNECT TO SERVER (DONE)", Network::done = true;
 			else
@@ -109,73 +135,70 @@ int Menu::displayLines()
 			lines = clientMenuLines;
 		}
 	}
-	else if (mode == 4)
+	else if (mode == LOOK)
 	{
 		int ret = Network::lookForClient();
 		if (ret == 0)
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (DONE)", Network::done = true;
 		else
 			serverMenuLines[2] = "[C]ONNECT WITH CLIENT (RETRY) " + to_string(ret);
-		mode = 0;
+		mode = MAIN_MENU;
 		lines = serverMenuLines;
 	}
-	SDL_RenderClear(renderer);
-	for (int i = 0; i < lines.size(); ++i)
+
+	displayLines();
+}
+
+int Menu::menuLoop()
+{
+	SDL_Event e;
+	int mode = MAIN_MENU, key;
+	Network::done = false;
+	if (Game::isServer)
+		Map::setMap();
+	lines = (Game::isServer ? serverMenuLines : clientMenuLines);
+	while (true)
 	{
-		char *msg = new char[lines[i].size() + 1];
-		if (!lines[i].empty())
+		key = -1;
+		if (SDL_PollEvent(&e))
 		{
-			strcpy(msg, lines[i].c_str());
-			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 4 + OFFSET * i);
+			if (e.type == SDL_QUIT)
+				mode = QUIT;
+			else if (e.type == SDL_KEYDOWN)
+				key = e.key.keysym.sym;
 		}
-	}
-	SDL_RenderPresent(renderer);
-	return 0;
-}
-
-int Menu::serverMenu()
-{
-	SDL_Event e;
-	mode = 0;
-	Network::done = false, Game::isServer = true;
-	Map::setMap();
-	lines = serverMenuLines;
-	while (true)
-	{
-		key = -1;
-		if (SDL_PollEvent(&e))
-			if (e.type == SDL_QUIT)
-				return -1;
-			else if (e.type == SDL_KEYDOWN)
-				key = e.key.keysym.sym;
-		int ret = displayLines();
-		if (ret != 0)
-			return ret;
+		handleMenuKeyEvents(mode, key);
+		if (mode == QUIT)
+			return -1;
+		if (mode == PLAY)
+			return 0;
 	}
 }
 
-int Menu::clientMenu()
-{
-	SDL_Event e;
-	mode = 0;
-	Network::done = false, Game::isServer = false;
-	lines = clientMenuLines;
-	while (true)
-	{
-		key = -1;
-		if (SDL_PollEvent(&e))
-			if (e.type == SDL_QUIT)
-				return -1;
-			else if (e.type == SDL_KEYDOWN)
-				key = e.key.keysym.sym;
-		int ret = displayLines();
-		if (ret != 0)
-			return ret;
-	}
-}
-
-// @TODO:
 int Menu::exitMenu()
 {
-	
+	lines = exitLines;
+	lines.push_back("[M]AIN MENU");
+	lines.push_back("[Q]UIT");
+	SDL_Event e;
+	while (true)
+	{
+		if (SDL_PollEvent(&e))
+			if (e.type == SDL_QUIT)
+				return -1;
+			else if (e.type == SDL_KEYDOWN)
+			{
+				switch (e.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+				case SDLK_q:
+					return -1;
+
+				case SDLK_m:
+					return 0;
+					break;
+				}
+			}
+		displayLines();
+	}
 }

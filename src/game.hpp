@@ -2,11 +2,13 @@
 #define GAME_H
 
 #include <unordered_set>
+#include <algorithm>
 #include <SDL.h>
 #include <SDL_image.h>
 #include "map.hpp"
 #include "theme.hpp"
 #include "networking.hpp"
+#include "menu.hpp"
 #include <iostream>
 
 #define WINDOW_WIDTH 950
@@ -42,7 +44,7 @@ struct Game
 	{
 		int health, flags;
 
-		Player();
+		Player(int dir);
 	};
 
 	struct Spawn : Object
@@ -60,7 +62,7 @@ struct Game
 	static int flagsOnMap, bombsOnMap, healthsOnMap, reloadTime;
 	static unordered_set<Bullet *> bullets;
 
-	static void renderInit(SDL_Renderer *sourceRenderer);
+	static int renderInit(SDL_Renderer *sourceRenderer);
 	static void initTextures();
 	static void loopGame();
 	static void handleKeyEvents(SDL_Keycode key);
@@ -69,6 +71,7 @@ struct Game
 	static void displayBullets();
 	static void updateSpawnables();
 	static void handleCollisions();
+	static bool checkEnded();
 };
 
 #endif

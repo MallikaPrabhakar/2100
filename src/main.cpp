@@ -45,27 +45,32 @@ int main()
 		printf("Could not load font %d, error encountered: %s\n", fonts, SDL_GetError());
 		return 1;
 	}
+
 	Theme::setTheme(1, renderer);
 	Menu::renderer = renderer;
-	// @TODO: insert while loop and exitMenu function in menu.?pp
+
 	int player = Menu::whichPlayer();
 	if (player == -1)
 		handleExit(renderer, window);
 	if (player == 1)
 	{
+		Game::isServer = true;
 		int ret = Network::makeServer();
 		if (ret != 0)
 		{
 			printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
 			handleExit(renderer, window);
 		}
-		if (Menu::serverMenu() == -1)
+	}
+	else
+		Game::isServer = false;
+
+	while (true)
+	{
+		if (Menu::menuLoop() == 0)
+			if (Game::renderInit(renderer) == 0)
+				Game::loopGame();
+		if (Menu::exitMenu() == -1)
 			handleExit(renderer, window);
 	}
-	else if (player == 2)
-		if (Menu::clientMenu() == -1)
-			handleExit(renderer, window);
-	Game::renderInit(renderer);
-	Game::loopGame();
-	handleExit(renderer, window);
 }

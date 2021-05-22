@@ -318,8 +318,7 @@ void Map::setMap(int mapNumber)
 		break;
 
 	case 5:
-		//random returns setMap(-1) for now
-		setMap(-1);
+		setMap(rand() % 4);
 		break;
 
 	default:
@@ -330,6 +329,7 @@ void Map::setMap(int mapNumber)
 
 void Map::setBasicMap()
 {
+	map.assign(MAP_SIZE, vector<int>(MAP_SIZE, 0));
 	//boundary wall creation
 	for (int i = 0; i < MAP_SIZE; i++)
 	{

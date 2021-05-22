@@ -15,14 +15,18 @@ using namespace std;
 
 struct Menu
 {
-	static SDL_Renderer *renderer;
-	static vector<string> serverMenuLines, clientMenuLines, lines;
-	static int mode, key;
+	enum modes
+	{
+		MAIN_MENU, THEME, MAP, CONNECT, LOOK, PLAY, QUIT = -1
+	};
 
+	static SDL_Renderer *renderer;
+	static vector<string> serverMenuLines, clientMenuLines, exitLines, lines;
+
+	static void displayLines();
 	static int whichPlayer();
-	static int displayLines();
-	static int serverMenu();
-	static int clientMenu();
+	static void handleMenuKeyEvents(int &mode, int key = -1);
+	static int menuLoop();
 	static int exitMenu();
 };
 

@@ -2,6 +2,7 @@
 #define MAP_H
 
 #include <vector>
+#include <random>
 #include "networking.hpp"
 
 using namespace std;
@@ -12,7 +13,7 @@ struct Map
 {
 	static vector<vector<int>> map;
 
-	static void setMap(int mapNumber = 3); 	// 0 is for player setting the map, else preset maps (will need to define them as global variables in game.cpp)
+	static void setMap(int mapNumber = 5);
 
 	static void setBasicMap();				//sets the basic map boundaries and home bases
 	static int sendMap();

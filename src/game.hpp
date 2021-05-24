@@ -19,7 +19,8 @@
 #define MSG_SIZE 100
 #define DELAY 20
 #define RELOAD 10
-#define MAX_HEALTH 5
+#define MAX_HEALTH 10
+#define FLAG_LIMIT 10
 
 struct Game
 {
@@ -71,7 +72,9 @@ struct Game
 	static void displayBullets();
 	static void updateSpawnables();
 	static void handleCollisions();
-	static bool checkEnded();
+	static bool updateHealth(int n);
+	static bool updateFlag();
+	static int finish();
 };
 
 #endif

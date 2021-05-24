@@ -89,7 +89,8 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	SDL_SetRenderTarget(renderer, NULL);
 
 	vector<SDL_Texture *> tempVector = {mapTexture, tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
-	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture) { return texture == NULL; }))
+	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
+			   { return texture == NULL; }))
 	{
 		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
 		return -1;
@@ -116,31 +117,12 @@ void Game::initTextures()
 	surface = IMG_Load((Theme::themeSource + "home1.tif").c_str());
 	home1 = SDL_CreateTextureFromSurface(renderer, surface);
 
-	/*
-	//player 1 at home base 1
-	surface = IMG_Load((Theme::themeSource + "player1home1.tif").c_str());
-	player1home1.texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-	//player 1 at home base 2
-	surface = IMG_Load((Theme::themeSource + "player1home2.tif").c_str());
-	player1home2.texture = SDL_CreateTextureFromSurface(renderer, surface);
-*/
 	//player 2 (opponent is player 2)
 	surface = IMG_Load((Theme::themeSource + "player2.tif").c_str());
 	opponent.texture = SDL_CreateTextureFromSurface(renderer, surface);
 
 	surface = IMG_Load((Theme::themeSource + "home2.tif").c_str());
 	home2 = SDL_CreateTextureFromSurface(renderer, surface);
-
-	/*
-	//player 2 at home base 1
-	surface = IMG_Load((Theme::themeSource + "player2home1.tif").c_str());
-	player2home1.texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-	//player 2 at home base 2
-	surface = IMG_Load((Theme::themeSource + "player2home2.tif").c_str());
-	player2home2.texture = SDL_CreateTextureFromSurface(renderer, surface);
-*/
 
 	//wall- barrier
 	surface = IMG_Load((Theme::themeSource + "wall.tif").c_str());
@@ -292,14 +274,69 @@ void Game::updateSpawnables()
 
 void Game::handleCollisions()
 {
+	//handle the interactions
+	//let n be the value of the tile with the spawnable
+	int n = 0;
+	bool endGame = false;
+	if (n == -3)
+	{
+		endGame = updateFlag();
+	}
+	if (n == -1 || n == -2)
+	{
+		endGame = updateHealth(n);
+	}
+	if (endGame)
+	{
+		finish();
+	}
+	return;
+}
+
+bool Game::updateHealth(int n)
+{
+	if (n == -1)
+	{
+		me.health += 2;
+
+		if (me.health > MAX_HEALTH)
+		{
+			me.health = MAX_HEALTH;
+		}
+	}
+	else
+	{
+		me.health -= 2;
+		if (me.health <= 0)
+		{
+			me.health = 0;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Game::updateFlag()
+{
+	me.flags++;
+	if (me.flags == FLAG_LIMIT)
+	{
+		return true;
+	}
+	return false;
 }
 
 // @TODO: implement checks
-bool Game::checkEnded()
+int Game::finish()
 {
-	if (false)
-		Menu::exitLines = {"THE GAME ENDED!"};
-	return false;
+	bool winner;
+
+	if (me.health==0){
+		Menu::exitLines = {"THE GAME ENDED!, YOU LOST"};
+	} else {
+		Menu::exitLines = {"THE GAME ENDED!, YOU WON"};
+	}
+	return -1;
 }
 
 /*

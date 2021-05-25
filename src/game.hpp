@@ -46,6 +46,9 @@ struct Game
 		int health, flags;
 
 		Player(int dir);
+
+		bool updateHealth();
+		bool updateFlag();
 	};
 
 	struct Spawn : Object
@@ -70,11 +73,10 @@ struct Game
 	static int recvPlayerInfo();
 	static int sendPlayerInfo();
 	static void displayBullets();
+	static bool updateBulletPos();
 	static void updateSpawnables();
-	static void handleCollisions();
-	static bool updateHealth(int n);
-	static bool updateFlag();
-	static int finish();
+	static bool handleCollisions();
+	static void finish();
 };
 
 #endif

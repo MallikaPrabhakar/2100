@@ -89,8 +89,7 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	SDL_SetRenderTarget(renderer, NULL);
 
 	vector<SDL_Texture *> tempVector = {mapTexture, tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
-	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
-			   { return texture == NULL; }))
+	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture) { return texture == NULL; }))
 	{
 		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
 		return -1;
@@ -174,7 +173,7 @@ void Game::loopGame()
 			Menu::exitLines = {string(isServer ? "CLIENT " : "SERVER ") + "DISCONNECTED FROM THE GAME"};
 			return;
 		}
-		// handleCollisions();
+		bool endGame = me.updateFlag() || me.updateHealth() || opponent.updateFlag() || opponent.updateHealth() || updateBulletPos();
 		// if (isServer)
 		// 	updateSpawnables();
 		// if (sendSpawnInfo() != 0)
@@ -190,8 +189,11 @@ void Game::loopGame()
 		SDL_RenderPresent(renderer);
 		SDL_Delay(DELAY);
 
-		if (checkEnded())
+		if (endGame)
+		{
+			finish();
 			return;
+		}
 	}
 }
 
@@ -260,8 +262,7 @@ void Game::displayBullets()
 {
 	for (auto it = bullets.begin(); it != bullets.end();)
 	{
-		(**it).updatePos();
-		if (Map::map[(**it).pos.x / TILE_SIZE][(**it).pos.y / TILE_SIZE] == 1)
+		if (Map::map[(*it).pos.x / TILE_SIZE][(*it).pos.y / TILE_SIZE] == 1)
 			bullets.erase(it++);
 		else
 			(**it).renderObject(), it++;
@@ -272,71 +273,63 @@ void Game::updateSpawnables()
 {
 }
 
-void Game::handleCollisions()
+bool Game::updateBulletPos()
 {
-	//handle the interactions
-	//let n be the value of the tile with the spawnable
-	int n = 0;
-	bool endGame = false;
-	if (n == -3)
+	bool ret = false;
+	for (auto it = bullets.begin(); it != bullets.end();)
 	{
-		endGame = updateFlag();
+		(**it).updatePos();
+		pair<int, int> p = {(*it).pos.x, (*it).pos.y};
+		if (p == make_pair(me.pos.x / TILE_SIZE, me.pos.y / TILE_SIZE))
+			ret = true, --me.health;
+		if (p == make_pair(opponent.pos.x / TILE_SIZE, opponent.pos.y / TILE_SIZE))
+			ret = true, --opponent.health;
 	}
-	if (n == -1 || n == -2)
-	{
-		endGame = updateHealth(n);
-	}
-	if (endGame)
-	{
-		finish();
-	}
-	return;
+	return ret;
 }
 
-bool Game::updateHealth(int n)
+bool Game::Player::updateHealth()
 {
+	int n = Map::map[pos.x / TILE_SIZE][pos.y / TILE_SIZE];
 	if (n == -1)
 	{
-		me.health += 2;
-
-		if (me.health > MAX_HEALTH)
-		{
-			me.health = MAX_HEALTH;
-		}
+		health += 2;
+		if (health > MAX_HEALTH)
+			health = MAX_HEALTH;
 	}
 	else
 	{
-		me.health -= 2;
-		if (me.health <= 0)
+		health -= 2;
+		if (health <= 0)
 		{
-			me.health = 0;
+			health = 0;
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Game::updateFlag()
+bool Game::Player::updateFlag()
 {
-	me.flags++;
-	if (me.flags == FLAG_LIMIT)
-	{
+	flags++;
+	if (flags == FLAG_LIMIT)
 		return true;
-	}
 	return false;
 }
 
-// @TODO: implement checks
-int Game::finish()
+// @TODO: enhance the messages
+void Game::finish()
 {
 	bool winner;
 
-	if (me.health==0){
+	if (me.health == 0)
+	{
 		Menu::exitLines = {"THE GAME ENDED!, YOU LOST"};
-	} else {
+	}
+	else
+	{
 		Menu::exitLines = {"THE GAME ENDED!, YOU WON"};
 	}
-	return -1;
 }
 
 /*
@@ -347,4 +340,5 @@ int Game::finish()
 	4. display bars
 	5. gameEnd function
 	6. appropriate delays on capture/death/end
+	7. check if possible for players to move to same pos at same time
 */

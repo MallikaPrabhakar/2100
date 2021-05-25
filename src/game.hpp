@@ -2,7 +2,9 @@
 #define GAME_H
 
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
+#include <boost/container_hash/hash.hpp>
 #include <SDL.h>
 #include <SDL_image.h>
 #include "map.hpp"
@@ -16,11 +18,19 @@
 #define OFFSET 50
 #define GAP 10
 #define TILE_SIZE 38
-#define MSG_SIZE 100
+#define MSG_SIZE 5
 #define DELAY 20
 #define RELOAD 10
 #define MAX_HEALTH 10
 #define FLAG_LIMIT 10
+#define MAX_SPAWN 5
+#define SPAWN_PROB 0.4
+
+template <typename A, typename B>
+struct hash<typename std::pair<A, B>>
+{
+	size_t operator()(const typename std::pair<A, B> &p) const { return boost::hash_value(p); }
+};
 
 struct Game
 {
@@ -47,15 +57,14 @@ struct Game
 
 		Player(int dir);
 
-		bool updateHealth();
-		bool updateFlag();
+		bool updateHealthAndFlags();
 	};
 
-	struct Spawn : Object
+	struct Spawnable : Object
 	{
 		int healthDelta;
 
-		Spawn(int x, int y, int affects, SDL_Texture *texture);
+		Spawnable(int x, int y, int effect, SDL_Texture *texture);
 	};
 
 	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag, *home1, *home2;
@@ -63,8 +72,9 @@ struct Game
 	static SDL_Rect mapRect;
 	static bool isServer;
 	static Player me, opponent;
-	static int flagsOnMap, bombsOnMap, healthsOnMap, reloadTime;
+	static int flagsOnMap, healthsOnMap, reloadTime;
 	static unordered_set<Bullet *> bullets;
+	static unordered_map<pair<int, int>, Spawnable *> spawnables;
 
 	static int renderInit(SDL_Renderer *sourceRenderer);
 	static void initTextures();
@@ -73,8 +83,11 @@ struct Game
 	static int recvPlayerInfo();
 	static int sendPlayerInfo();
 	static void displayBullets();
-	static bool updateBulletPos();
-	static void updateSpawnables();
+	static bool updateBullets();
+	static int updateSpawnables();
+	static void displaySpawnables();
+	static pair<int, int> spawnObject(int healthDelta);
+	static int recvSpawnInfo();
 	static bool handleCollisions();
 	static void finish();
 };

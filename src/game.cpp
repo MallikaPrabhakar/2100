@@ -5,8 +5,9 @@ SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
 Game::Player Game::me(2), Game::opponent(0);
-int Game::flagsOnMap, Game::bombsOnMap, Game::healthsOnMap, Game::reloadTime;
+int Game::flagsOnMap, Game::healthsOnMap, Game::reloadTime;
 unordered_set<Game::Bullet *> Game::bullets;
+unordered_map<pair<int, int>, Game::Spawnable *> Game::spawnables;
 
 Game::Object::Object(int dir, SDL_Texture *texture)
 {
@@ -28,12 +29,12 @@ Game::Bullet::Bullet(int x, int y, int dir, SDL_Texture *texture) : Object(dir, 
 	pos.y = y;
 }
 
-Game::Spawn::Spawn(int x, int y, int affects, SDL_Texture *texture) : Object(0, texture)
+Game::Spawnable::Spawnable(int x, int y, int effect, SDL_Texture *texture) : Object(0, texture)
 {
 	pos.h = pos.w = TILE_SIZE;
 	pos.x = x;
 	pos.y = y;
-	healthDelta = affects;
+	healthDelta = effect;
 }
 
 void Game::Object::updatePos()
@@ -127,7 +128,7 @@ void Game::initTextures()
 	surface = IMG_Load((Theme::themeSource + "wall.tif").c_str());
 	wall = SDL_CreateTextureFromSurface(renderer, surface);
 
-	//bullet- @TODO currently pi/2 radian rotated
+	//bullet
 	surface = IMG_Load((Theme::themeSource + "bullet.tif").c_str());
 	bullet = SDL_CreateTextureFromSurface(renderer, surface);
 
@@ -146,7 +147,7 @@ void Game::initTextures()
 
 void Game::loopGame()
 {
-	// initSpawnables();
+	srand(time(NULL));
 	SDL_Event e;
 	while (true)
 	{
@@ -173,16 +174,15 @@ void Game::loopGame()
 			Menu::exitLines = {string(isServer ? "CLIENT " : "SERVER ") + "DISCONNECTED FROM THE GAME"};
 			return;
 		}
-		bool endGame = me.updateFlag() || me.updateHealth() || opponent.updateFlag() || opponent.updateHealth() || updateBulletPos();
-		// if (isServer)
-		// 	updateSpawnables();
-		// if (sendSpawnInfo() != 0)
-		// 	return;
-		// if (recvSpawnInfo() != 0)
-		// 	return;
+		bool endGame = me.updateHealthAndFlags() || opponent.updateHealthAndFlags() || updateBullets();
+		if (isServer)
+			updateSpawnables();
+		else
+			recvSpawnInfo();
 
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
+		displaySpawnables();
 		opponent.renderObject();
 		me.renderObject();
 		displayBullets();
@@ -199,6 +199,8 @@ void Game::loopGame()
 
 void Game::handleKeyEvents(SDL_Keycode key)
 {
+	int x = me.pos.x / TILE_SIZE, y = me.pos.y / TILE_SIZE;
+	pair<int, int> oppPos = {opponent.pos.x / TILE_SIZE, opponent.pos.y / TILE_SIZE};
 	if (key == SDLK_SPACE && !reloadTime)
 	{
 		bullets.insert(new Bullet(me.pos.x, me.pos.y, me.dir, bullet));
@@ -208,41 +210,43 @@ void Game::handleKeyEvents(SDL_Keycode key)
 	{
 		if (me.dir != 0)
 			me.dir = 0;
-		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE - 1] <= 0)
+		else if (Map::map[x][y - 1] == 0 && make_pair(x, y - 1) != oppPos)
 			me.pos.y -= TILE_SIZE;
 	}
 	else if (key == SDLK_RIGHT || key == SDLK_d)
 	{
 		if (me.dir != 1)
 			me.dir = 1;
-		else if (Map::map[me.pos.x / TILE_SIZE + 1][me.pos.y / TILE_SIZE] <= 0)
+		else if (Map::map[x + 1][y] == 0 && make_pair(x + 1, y) != oppPos)
 			me.pos.x += TILE_SIZE;
 	}
 	else if (key == SDLK_DOWN || key == SDLK_s)
 	{
 		if (me.dir != 2)
 			me.dir = 2;
-		else if (Map::map[me.pos.x / TILE_SIZE][me.pos.y / TILE_SIZE + 1] <= 0)
+		else if (Map::map[x][y + 1] == 0 && make_pair(x, y + 1) != oppPos)
 			me.pos.y += TILE_SIZE;
 	}
 	else if (key == SDLK_LEFT || key == SDLK_a)
 	{
 		if (me.dir != 3)
 			me.dir = 3;
-		else if (Map::map[me.pos.x / TILE_SIZE - 1][me.pos.y / TILE_SIZE] <= 0)
+		else if (Map::map[x - 1][y] == 0 && make_pair(x - 1, y) != oppPos)
 			me.pos.x -= TILE_SIZE;
 	}
 }
 
 int Game::recvPlayerInfo()
 {
-	char info[MSG_SIZE];
+	char info[MSG_SIZE] = {-1};
 	if (Network::recvRequest(info, MSG_SIZE) == 4)
 		return 4;
-	opponent.pos.x = info[0] * TILE_SIZE;
-	opponent.pos.y = info[1] * TILE_SIZE;
-	opponent.dir = info[2];
-	if (info[3] == 1)
+	if (info[0] != 0)
+		return -1;
+	opponent.pos.x = info[1] * TILE_SIZE;
+	opponent.pos.y = info[2] * TILE_SIZE;
+	opponent.dir = info[3];
+	if (info[4] == 1)
 		bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
 	return 0;
 }
@@ -250,73 +254,122 @@ int Game::recvPlayerInfo()
 int Game::sendPlayerInfo()
 {
 	char info[MSG_SIZE] = {0};
-	info[0] = me.pos.x / TILE_SIZE;
-	info[1] = me.pos.y / TILE_SIZE;
-	info[2] = me.dir;
+	info[1] = me.pos.x / TILE_SIZE;
+	info[2] = me.pos.y / TILE_SIZE;
+	info[3] = me.dir;
 	if (reloadTime == RELOAD)
-		info[3] = 1;
+		info[4] = 1;
 	return Network::sendRequest(info, MSG_SIZE);
 }
 
 void Game::displayBullets()
 {
-	for (auto it = bullets.begin(); it != bullets.end();)
-	{
-		if (Map::map[(**it).pos.x / TILE_SIZE][(**it).pos.y / TILE_SIZE] == 1)
-			bullets.erase(it++);
-		else
-			(**it).renderObject(), it++;
-	}
+	for (auto it = bullets.begin(); it != bullets.end(); it++)
+		(**it).renderObject();
 }
 
-void Game::updateSpawnables()
-{
-}
-
-bool Game::updateBulletPos()
+bool Game::updateBullets()
 {
 	bool ret = false;
-	for (auto it = bullets.begin(); it != bullets.end(); it++)
+	for (auto it = bullets.begin(); it != bullets.end();)
 	{
 		(**it).updatePos();
 		pair<int, int> p = {(**it).pos.x, (**it).pos.y};
-		if (p == make_pair(me.pos.x, me.pos.y))
-			if (--me.health == 0)
-				ret = true;
-		if (p == make_pair(opponent.pos.x, opponent.pos.y))
-			if (--opponent.health == 0)
-				ret = true;
+		if (Map::map[p.first / TILE_SIZE][p.second / TILE_SIZE] == 1)
+		{
+			bullets.erase(it++);
+			continue;
+		}
+		it++;
+		if (p == make_pair(me.pos.x, me.pos.y) && --me.health <= 0)
+			me.health = 0, ret = true;
+		if (p == make_pair(opponent.pos.x, opponent.pos.y) && --opponent.health <= 0)
+			opponent.health = 0, ret = true;
 	}
 	return ret;
 }
 
-bool Game::Player::updateHealth()
+void Game::displaySpawnables()
 {
-	int n = Map::map[pos.x / TILE_SIZE][pos.y / TILE_SIZE];
-	if (n == -1)
-	{
-		health += 2;
-		if (health > MAX_HEALTH)
-			health = MAX_HEALTH;
-	}
-	else if (n == -2)
-	{
-		health -= 2;
-		if (health <= 0)
-		{
-			health = 0;
-			return true;
-		}
-	}
-	return false;
+	for (auto it = spawnables.begin(); it != spawnables.end(); it++)
+		it->second->renderObject();
 }
 
-bool Game::Player::updateFlag()
+int Game::updateSpawnables()
 {
-	if (Map::map[pos.x / TILE_SIZE][pos.y / TILE_SIZE] == -3)
-		flags++;
-	if (flags == FLAG_LIMIT)
-		return true;
+	pair<int, int> Pos = {-1, -1};
+	int type = 0;
+	if (flagsOnMap == 0)
+		Pos = spawnObject(0);
+	else if (healthsOnMap < MAX_SPAWN)
+		if (rand() * 1.0 / RAND_MAX < SPAWN_PROB)
+		{
+			type = rand() * 1.0 / RAND_MAX < 0.5 ? 1 : -1;
+			Pos = spawnObject(type > 0 ? 2 : -2);
+		}
+	char info[MSG_SIZE] = {-1};
+	if (Pos == make_pair(-1, -1))
+		return Network::sendRequest(info, MSG_SIZE);
+	info[0] = 1;
+	info[1] = Pos.first / TILE_SIZE;
+	info[2] = Pos.second / TILE_SIZE;
+	info[3] = type;
+	return Network::sendRequest(info, MSG_SIZE);
+}
+
+pair<int, int> Game::spawnObject(int healthDelta)
+{
+	while (true)
+	{
+		pair<int, int> Pos = {(rand() % MAP_SIZE) * TILE_SIZE, (rand() % MAP_SIZE) * TILE_SIZE};
+		if (spawnables.find(Pos) != spawnables.end() || Map::map[Pos.first / TILE_SIZE][Pos.second / TILE_SIZE] == 1 || Pos == make_pair(me.pos.x, me.pos.y) || Pos == make_pair(opponent.pos.x, opponent.pos.y))
+			continue;
+		spawnables[Pos] = new Spawnable(Pos.first, Pos.second, healthDelta, healthDelta == 0 ? flag : (healthDelta > 0 ? health : bomb));
+		if (healthDelta != 0)
+			++healthsOnMap;
+		else
+			++flagsOnMap;
+		return Pos;
+	}
+}
+
+int Game::recvSpawnInfo()
+{
+	char info[MSG_SIZE];
+	if (Network::recvRequest(info, MSG_SIZE) == 4)
+		return 4;
+	if (info[0] != 1)
+		return -1;
+	pair<int, int> Pos = {info[1] * TILE_SIZE, info[2] * TILE_SIZE};
+	spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
+	return 0;
+}
+
+bool Game::Player::updateHealthAndFlags()
+{
+	pair<int, int> Pos = {pos.x, pos.y};
+	if (spawnables.find(Pos) != spawnables.end())
+	{
+		Spawnable *spawnable = spawnables[Pos];
+		spawnables.erase(Pos);
+		if (spawnable->healthDelta == 0)
+		{
+			--flagsOnMap, flags++;
+			if (flags == FLAG_LIMIT)
+				return true;
+		}
+		else
+		{
+			--healthsOnMap, health += spawnable->healthDelta;
+			if (health > MAX_HEALTH)
+				health = MAX_HEALTH;
+			else if (health <= 0)
+			{
+				health = 0;
+				return true;
+			}
+		}
+	}
 	return false;
 }
 
@@ -337,10 +390,9 @@ void Game::finish()
 
 /*
 	@TODO:
-	1. health -1, bomb -2, flags -3
-	2. opponent == wall
-	3. display bars
-	4. gameEnd function
-	5. appropriate delays on capture/death/end
-	6. check if possible for players to move to same pos at same time
+	1. display bars
+	2. gameEnd function
+	3. appropriate delays on capture/death/end
+	4. visible lag because of too many functions, need to investigate
+	5. check if possible for players to move to same pos at same time
 */

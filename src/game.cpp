@@ -262,7 +262,7 @@ void Game::displayBullets()
 {
 	for (auto it = bullets.begin(); it != bullets.end();)
 	{
-		if (Map::map[(*it).pos.x / TILE_SIZE][(*it).pos.y / TILE_SIZE] == 1)
+		if (Map::map[(**it).pos.x / TILE_SIZE][(**it).pos.y / TILE_SIZE] == 1)
 			bullets.erase(it++);
 		else
 			(**it).renderObject(), it++;
@@ -276,14 +276,16 @@ void Game::updateSpawnables()
 bool Game::updateBulletPos()
 {
 	bool ret = false;
-	for (auto it = bullets.begin(); it != bullets.end();)
+	for (auto it = bullets.begin(); it != bullets.end(); it++)
 	{
 		(**it).updatePos();
-		pair<int, int> p = {(*it).pos.x, (*it).pos.y};
-		if (p == make_pair(me.pos.x / TILE_SIZE, me.pos.y / TILE_SIZE))
-			ret = true, --me.health;
-		if (p == make_pair(opponent.pos.x / TILE_SIZE, opponent.pos.y / TILE_SIZE))
-			ret = true, --opponent.health;
+		pair<int, int> p = {(**it).pos.x, (**it).pos.y};
+		if (p == make_pair(me.pos.x, me.pos.y))
+			if (--me.health == 0)
+				ret = true;
+		if (p == make_pair(opponent.pos.x, opponent.pos.y))
+			if (--opponent.health == 0)
+				ret = true;
 	}
 	return ret;
 }
@@ -297,7 +299,7 @@ bool Game::Player::updateHealth()
 		if (health > MAX_HEALTH)
 			health = MAX_HEALTH;
 	}
-	else
+	else if (n == -2)
 	{
 		health -= 2;
 		if (health <= 0)
@@ -311,7 +313,8 @@ bool Game::Player::updateHealth()
 
 bool Game::Player::updateFlag()
 {
-	flags++;
+	if (Map::map[pos.x / TILE_SIZE][pos.y / TILE_SIZE] == -3)
+		flags++;
 	if (flags == FLAG_LIMIT)
 		return true;
 	return false;
@@ -335,10 +338,9 @@ void Game::finish()
 /*
 	@TODO:
 	1. health -1, bomb -2, flags -3
-	2. collisions - 1. + bullets
-	3. opponent == wall
-	4. display bars
-	5. gameEnd function
-	6. appropriate delays on capture/death/end
-	7. check if possible for players to move to same pos at same time
+	2. opponent == wall
+	3. display bars
+	4. gameEnd function
+	5. appropriate delays on capture/death/end
+	6. check if possible for players to move to same pos at same time
 */

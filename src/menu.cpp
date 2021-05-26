@@ -37,8 +37,6 @@ int Menu::whichPlayer()
 					return 1;
 				case SDLK_2:
 					return 2;
-				default:
-					continue;
 				}
 		displayLines();
 	}

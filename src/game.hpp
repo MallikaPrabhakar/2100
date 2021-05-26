@@ -19,8 +19,7 @@
 #define GAP 10
 #define TILE_SIZE 38
 #define MSG_SIZE 5
-#define DELAY 20
-#define RELOAD 10
+#define RELOAD 50
 #define MAX_HEALTH 10
 #define FLAG_LIMIT 10
 #define MAX_SPAWN 5

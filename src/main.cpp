@@ -20,7 +20,7 @@ void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 
 int main()
 {
-	SDL_Window *window = SDL_CreateWindow("Menu", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+	SDL_Window *window = SDL_CreateWindow("Capture the Flag!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
 		printf("Could not create window, error encountered: %s\n", SDL_GetError());

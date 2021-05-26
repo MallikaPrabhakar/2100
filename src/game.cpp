@@ -95,6 +95,8 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
 		return -1;
 	}
+	me.health = opponent.health = MAX_HEALTH;
+	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
 	if (!isServer)
@@ -175,10 +177,16 @@ void Game::loopGame()
 			return;
 		}
 		bool endGame = me.updateHealthAndFlags() || opponent.updateHealthAndFlags() || updateBullets();
-		if (isServer)
-			updateSpawnables();
-		else
-			recvSpawnInfo();
+		if (isServer && updateSpawnables() != 0)
+		{
+			Menu::exitLines = {string("ERROR IN SENDING INFORMATION TO CLIENT")};
+			return;
+		}
+		else if (!isServer && recvSpawnInfo() != 0)
+		{
+			Menu::exitLines = {"SERVER DISCONNECTED FROM THE GAME"};
+			return;
+		}
 
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
@@ -187,7 +195,6 @@ void Game::loopGame()
 		me.renderObject();
 		displayBullets();
 		SDL_RenderPresent(renderer);
-		SDL_Delay(DELAY);
 
 		if (endGame)
 		{
@@ -211,28 +218,28 @@ void Game::handleKeyEvents(SDL_Keycode key)
 		if (me.dir != 0)
 			me.dir = 0;
 		else if (Map::map[x][y - 1] == 0 && make_pair(x, y - 1) != oppPos)
-			me.pos.y -= TILE_SIZE;
+			me.updatePos();
 	}
 	else if (key == SDLK_RIGHT || key == SDLK_d)
 	{
 		if (me.dir != 1)
 			me.dir = 1;
 		else if (Map::map[x + 1][y] == 0 && make_pair(x + 1, y) != oppPos)
-			me.pos.x += TILE_SIZE;
+			me.updatePos();
 	}
 	else if (key == SDLK_DOWN || key == SDLK_s)
 	{
 		if (me.dir != 2)
 			me.dir = 2;
 		else if (Map::map[x][y + 1] == 0 && make_pair(x, y + 1) != oppPos)
-			me.pos.y += TILE_SIZE;
+			me.updatePos();
 	}
 	else if (key == SDLK_LEFT || key == SDLK_a)
 	{
 		if (me.dir != 3)
 			me.dir = 3;
 		else if (Map::map[x - 1][y] == 0 && make_pair(x - 1, y) != oppPos)
-			me.pos.x -= TILE_SIZE;
+			me.updatePos();
 	}
 }
 
@@ -270,7 +277,6 @@ void Game::displayBullets()
 
 bool Game::updateBullets()
 {
-	bool ret = false;
 	for (auto it = bullets.begin(); it != bullets.end();)
 	{
 		(**it).updatePos();
@@ -280,13 +286,23 @@ bool Game::updateBullets()
 			bullets.erase(it++);
 			continue;
 		}
+		if (p == make_pair(me.pos.x, me.pos.y))
+		{
+			bullets.erase(it++);
+			if (--me.health <= 0)
+				return me.health = 0, true;
+			continue;
+		}
+		if (p == make_pair(opponent.pos.x, opponent.pos.y))
+		{
+			bullets.erase(it++);
+			if (--opponent.health <= 0)
+				return opponent.health = 0, true;
+			continue;
+		}
 		it++;
-		if (p == make_pair(me.pos.x, me.pos.y) && --me.health <= 0)
-			me.health = 0, ret = true;
-		if (p == make_pair(opponent.pos.x, opponent.pos.y) && --opponent.health <= 0)
-			opponent.health = 0, ret = true;
 	}
-	return ret;
+	return false;
 }
 
 void Game::displaySpawnables()
@@ -339,7 +355,7 @@ int Game::recvSpawnInfo()
 	if (Network::recvRequest(info, MSG_SIZE) == 4)
 		return 4;
 	if (info[0] != 1)
-		return -1;
+		return info[0] + 1;
 	pair<int, int> Pos = {info[1] * TILE_SIZE, info[2] * TILE_SIZE};
 	spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
 	return 0;
@@ -364,10 +380,7 @@ bool Game::Player::updateHealthAndFlags()
 			if (health > MAX_HEALTH)
 				health = MAX_HEALTH;
 			else if (health <= 0)
-			{
-				health = 0;
-				return true;
-			}
+				return health = 0, true;
 		}
 	}
 	return false;
@@ -376,8 +389,6 @@ bool Game::Player::updateHealthAndFlags()
 // @TODO: enhance the messages
 void Game::finish()
 {
-	bool winner;
-
 	if (me.health == 0)
 	{
 		Menu::exitLines = {"THE GAME ENDED!, YOU LOST"};
@@ -390,9 +401,9 @@ void Game::finish()
 
 /*
 	@TODO:
-	1. display bars
-	2. gameEnd function
+	1. display bars - health, reload time, flags
+	2. gameEnd function (after story finalised)
 	3. appropriate delays on capture/death/end
-	4. visible lag because of too many functions, need to investigate
-	5. check if possible for players to move to same pos at same time
+	4. check if possible for players to move to same pos at same time
+	5. mega bullet powerup?
 */

@@ -4,59 +4,12 @@ SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::b
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
-Game::Player Game::me(2), Game::opponent(0);
-int Game::flagsOnMap, Game::healthsOnMap, Game::reloadTime;
-unordered_set<Game::Bullet *> Game::bullets;
-unordered_map<pair<int, int>, Game::Spawnable *> Game::spawnables;
-
-Game::Object::Object(int dir, SDL_Texture *texture)
-{
-	this->texture = texture;
-	this->dir = dir;
-}
-
-Game::Player::Player(int dir) : Object(dir, NULL)
-{
-	pos.w = pos.h = TILE_SIZE;
-	flags = 0;
-	health = MAX_HEALTH;
-}
-
-Game::Bullet::Bullet(int x, int y, int dir, SDL_Texture *texture) : Object(dir, texture)
-{
-	pos.h = pos.w = TILE_SIZE;
-	pos.x = x;
-	pos.y = y;
-}
-
-Game::Spawnable::Spawnable(int x, int y, int effect, SDL_Texture *texture) : Object(0, texture)
-{
-	pos.h = pos.w = TILE_SIZE;
-	pos.x = x;
-	pos.y = y;
-	healthDelta = effect;
-}
-
-void Game::Object::updatePos()
-{
-	if (dir == 0)
-		pos.y -= TILE_SIZE;
-	else if (dir == 1)
-		pos.x += TILE_SIZE;
-	else if (dir == 2)
-		pos.y += TILE_SIZE;
-	else if (dir == 3)
-		pos.x -= TILE_SIZE;
-}
-
-void Game::Object::renderObject()
-{
-	SDL_RenderCopyEx(renderer, texture, NULL, &pos, dir * 90, NULL, SDL_FLIP_NONE);
-}
+Player Game::me(2), Game::opponent(0);
+int Game::reloadTime;
 
 int Game::renderInit(SDL_Renderer *sourceRenderer)
 {
-	renderer = sourceRenderer;
+	renderer = Object::renderer = sourceRenderer;
 	if ((isServer ? Map::sendMap() : Map::recvMap()) != 0)
 	{
 		Menu::exitLines = {"UNABLE TO SEND/RECEIVE MAP"};
@@ -64,20 +17,15 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	}
 
 	initTextures();
-	mapRect.x = 0;
-	mapRect.y = 0;
-	mapRect.w = WINDOW_WIDTH;
-	mapRect.h = WINDOW_HEIGHT - (OFFSET + GAP);
+	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT - (OFFSET + GAP)});
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
 	SDL_SetRenderTarget(renderer, mapTexture);
-	SDL_Rect rect;
-	rect.h = rect.w = TILE_SIZE;
+	SDL_Rect rect = {0, 0, TILE_SIZE, TILE_SIZE};
 	for (int i = 0; i < MAP_SIZE; ++i)
 		for (int j = 0; j < MAP_SIZE; ++j)
 		{
 			rect.x = TILE_SIZE * i;
 			rect.y = TILE_SIZE * j;
-
 			if (i == 1 && j == 1)
 				SDL_RenderCopy(renderer, home1, NULL, &rect);
 			else if (i == 23 && j == 23)
@@ -95,12 +43,17 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
 		return -1;
 	}
+
 	me.health = opponent.health = MAX_HEALTH;
 	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
 	if (!isServer)
 		swap(me, opponent);
+
+	Spawnable::healthsOnMap = Spawnable::flagsOnMap = 0;
+	Spawnable::spawnables.clear();
+
 	return 0;
 }
 
@@ -177,7 +130,7 @@ void Game::loopGame()
 			return;
 		}
 		bool endGame = me.updateHealthAndFlags() || opponent.updateHealthAndFlags() || updateBullets();
-		if (isServer && updateSpawnables() != 0)
+		if (isServer && updateAndSendSpawnables() != 0)
 		{
 			Menu::exitLines = {string("ERROR IN SENDING INFORMATION TO CLIENT")};
 			return;
@@ -190,10 +143,11 @@ void Game::loopGame()
 
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
-		displaySpawnables();
+		Spawnable::displaySpawnables();
 		opponent.renderObject();
 		me.renderObject();
-		displayBullets();
+		Bullet::displayBullets();
+		displayBars();
 		SDL_RenderPresent(renderer);
 
 		if (endGame)
@@ -210,7 +164,7 @@ void Game::handleKeyEvents(SDL_Keycode key)
 	pair<int, int> oppPos = {opponent.pos.x / TILE_SIZE, opponent.pos.y / TILE_SIZE};
 	if (key == SDLK_SPACE && !reloadTime)
 	{
-		bullets.insert(new Bullet(me.pos.x, me.pos.y, me.dir, bullet));
+		Bullet::bullets.insert(new Bullet(me.pos.x, me.pos.y, me.dir, bullet));
 		reloadTime = RELOAD;
 	}
 	else if (key == SDLK_UP || key == SDLK_w)
@@ -254,7 +208,7 @@ int Game::recvPlayerInfo()
 	opponent.pos.y = info[2] * TILE_SIZE;
 	opponent.dir = info[3];
 	if (info[4] == 1)
-		bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
+		Bullet::bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
 	return 0;
 }
 
@@ -269,33 +223,27 @@ int Game::sendPlayerInfo()
 	return Network::sendRequest(info, MSG_SIZE);
 }
 
-void Game::displayBullets()
-{
-	for (auto it = bullets.begin(); it != bullets.end(); it++)
-		(**it).renderObject();
-}
-
 bool Game::updateBullets()
 {
-	for (auto it = bullets.begin(); it != bullets.end();)
+	for (auto it = Bullet::bullets.begin(); it != Bullet::bullets.end();)
 	{
 		(**it).updatePos();
 		pair<int, int> p = {(**it).pos.x, (**it).pos.y};
 		if (Map::map[p.first / TILE_SIZE][p.second / TILE_SIZE] == 1)
 		{
-			bullets.erase(it++);
+			Bullet::bullets.erase(it++);
 			continue;
 		}
 		if (p == make_pair(me.pos.x, me.pos.y))
 		{
-			bullets.erase(it++);
+			Bullet::bullets.erase(it++);
 			if (--me.health <= 0)
 				return me.health = 0, true;
 			continue;
 		}
 		if (p == make_pair(opponent.pos.x, opponent.pos.y))
 		{
-			bullets.erase(it++);
+			Bullet::bullets.erase(it++);
 			if (--opponent.health <= 0)
 				return opponent.health = 0, true;
 			continue;
@@ -305,19 +253,13 @@ bool Game::updateBullets()
 	return false;
 }
 
-void Game::displaySpawnables()
-{
-	for (auto it = spawnables.begin(); it != spawnables.end(); it++)
-		it->second->renderObject();
-}
-
-int Game::updateSpawnables()
+int Game::updateAndSendSpawnables()
 {
 	pair<int, int> Pos = {-1, -1};
 	int type = 0;
-	if (flagsOnMap == 0)
+	if (Spawnable::flagsOnMap == 0)
 		Pos = spawnObject(0);
-	else if (healthsOnMap < MAX_SPAWN)
+	else if (Spawnable::healthsOnMap < MAX_SPAWN)
 		if (rand() * 1.0 / RAND_MAX < SPAWN_PROB)
 		{
 			type = rand() * 1.0 / RAND_MAX < 0.5 ? 1 : -1;
@@ -338,13 +280,13 @@ pair<int, int> Game::spawnObject(int healthDelta)
 	while (true)
 	{
 		pair<int, int> Pos = {(rand() % MAP_SIZE) * TILE_SIZE, (rand() % MAP_SIZE) * TILE_SIZE};
-		if (spawnables.find(Pos) != spawnables.end() || Map::map[Pos.first / TILE_SIZE][Pos.second / TILE_SIZE] == 1 || Pos == make_pair(me.pos.x, me.pos.y) || Pos == make_pair(opponent.pos.x, opponent.pos.y))
+		if (Spawnable::spawnables.find(Pos) != Spawnable::spawnables.end() || Map::map[Pos.first / TILE_SIZE][Pos.second / TILE_SIZE] == 1 || Pos == make_pair(me.pos.x, me.pos.y) || Pos == make_pair(opponent.pos.x, opponent.pos.y))
 			continue;
-		spawnables[Pos] = new Spawnable(Pos.first, Pos.second, healthDelta, healthDelta == 0 ? flag : (healthDelta > 0 ? health : bomb));
+		Spawnable::spawnables[Pos] = new Spawnable(Pos.first, Pos.second, healthDelta, healthDelta == 0 ? flag : (healthDelta > 0 ? health : bomb));
 		if (healthDelta != 0)
-			++healthsOnMap;
+			++Spawnable::healthsOnMap;
 		else
-			++flagsOnMap;
+			++Spawnable::flagsOnMap;
 		return Pos;
 	}
 }
@@ -357,33 +299,13 @@ int Game::recvSpawnInfo()
 	if (info[0] != 1)
 		return info[0] + 1;
 	pair<int, int> Pos = {info[1] * TILE_SIZE, info[2] * TILE_SIZE};
-	spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
+	Spawnable::spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
 	return 0;
 }
 
-bool Game::Player::updateHealthAndFlags()
+void Game::displayBars()
 {
-	pair<int, int> Pos = {pos.x, pos.y};
-	if (spawnables.find(Pos) != spawnables.end())
-	{
-		Spawnable *spawnable = spawnables[Pos];
-		spawnables.erase(Pos);
-		if (spawnable->healthDelta == 0)
-		{
-			--flagsOnMap, flags++;
-			if (flags == FLAG_LIMIT)
-				return true;
-		}
-		else
-		{
-			--healthsOnMap, health += spawnable->healthDelta;
-			if (health > MAX_HEALTH)
-				health = MAX_HEALTH;
-			else if (health <= 0)
-				return health = 0, true;
-		}
-	}
-	return false;
+	
 }
 
 // @TODO: enhance the messages

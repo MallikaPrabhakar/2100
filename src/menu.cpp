@@ -155,6 +155,7 @@ int Menu::menuLoop()
 	if (Game::isServer)
 		Map::setMap();
 	lines = (Game::isServer ? serverMenuLines : clientMenuLines);
+	exitLines.clear();
 	while (true)
 	{
 		key = -1;

@@ -1,4 +1,4 @@
-objects = theme.o font.o networking.o menu.o map.o game.o main.o
+objects = theme.o font.o networking.o menu.o map.o game.o object.o main.o
 LIBS = -lSDL2_ttf -lSDL2_image -lpthread
 CFLAGS = `sdl2-config --cflags`
 
@@ -28,8 +28,11 @@ networking.o: networking.cpp networking.hpp
 map.o: map.cpp map.hpp networking.o
 	g++ -c $(CFLAGS) map.cpp
 
-game.o: game.cpp game.hpp map.o theme.o networking.o
+game.o: game.cpp game.hpp object.o map.o theme.o networking.o
 	g++ -c $(CFLAGS) game.cpp
+
+object.o: object.cpp object.hpp
+	g++ -c $(CFLAGS) object.cpp
 
 clean:
 	rm -f $(objects)

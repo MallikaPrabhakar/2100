@@ -11,10 +11,9 @@
 #include "menu.hpp"
 #include <iostream>
 
-#define WINDOW_WIDTH 950
+#define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 1010
-#define OFFSET 50
-#define GAP 10
+#define OFFSET 25
 #define MSG_SIZE 5
 #define RELOAD 50
 #define MAX_SPAWN 5
@@ -41,7 +40,9 @@ struct Game
 	static int updateAndSendSpawnables();
 	static pair<int, int> spawnObject(int healthDelta);
 	static int recvSpawnInfo();
-	static void displayBars();
+	static void displayHealthBars();
+	static void displayFlagsCount();
+	static void displayReloadTime();
 	static void finish();
 };
 

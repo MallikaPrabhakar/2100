@@ -6,7 +6,7 @@
 #include <boost/container_hash/hash.hpp>
 #include <SDL.h>
 
-#define TILE_SIZE 38
+#define TILE_SIZE 36
 #define MAX_HEALTH 10
 #define FLAG_LIMIT 10
 

@@ -17,7 +17,7 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	}
 
 	initTextures();
-	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_HEIGHT - (OFFSET + GAP)});
+	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_WIDTH});
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
 	SDL_SetRenderTarget(renderer, mapTexture);
 	SDL_Rect rect = {0, 0, TILE_SIZE, TILE_SIZE};
@@ -147,7 +147,9 @@ void Game::loopGame()
 		opponent.renderObject();
 		me.renderObject();
 		Bullet::displayBullets();
-		displayBars();
+		displayHealthBars();
+		displayFlagsCount();
+		displayReloadTime();
 		SDL_RenderPresent(renderer);
 
 		if (endGame)
@@ -303,9 +305,84 @@ int Game::recvSpawnInfo()
 	return 0;
 }
 
-void Game::displayBars()
+void Game::displayHealthBars()
 {
-	
+	SDL_Rect healthRect = {OFFSET, WINDOW_WIDTH + OFFSET / 2, OFFSET, OFFSET};
+	SDL_Color oldColor, healthColor = {250, 0, 0, 0};
+	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	for (int i = 0; i < me.health; ++i)
+	{
+		SDL_SetRenderDrawColor(renderer, healthColor.r, healthColor.g, healthColor.b, healthColor.a);
+		SDL_RenderFillRect(renderer, &healthRect);
+		healthColor.r -= 25;
+		healthColor.g += 25;
+		healthRect.x += healthRect.w;
+	}
+	healthColor = {250, 0, 0, 0};
+	healthRect.x = WINDOW_WIDTH - OFFSET;
+	healthRect.w = -healthRect.w;
+	for (int i = 0; i < opponent.health; ++i)
+	{
+		SDL_SetRenderDrawColor(renderer, healthColor.r, healthColor.g, healthColor.b, healthColor.a);
+		SDL_RenderFillRect(renderer, &healthRect);
+		healthColor.r -= 25;
+		healthColor.g += 25;
+		healthRect.x += healthRect.w;
+	}
+	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	healthRect.x = OFFSET;
+	healthRect.w = MAX_HEALTH * OFFSET;
+	SDL_RenderDrawRect(renderer, &healthRect);
+	healthRect.x = WINDOW_WIDTH - OFFSET;
+	healthRect.w = -healthRect.w;
+	SDL_RenderDrawRect(renderer, &healthRect);
+	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+}
+
+void Game::displayFlagsCount()
+{
+	SDL_Color oldColor;
+	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	SDL_Rect flagRect = {OFFSET, WINDOW_WIDTH + 2 * OFFSET, OFFSET, OFFSET};
+	for (int i = 0; i < me.flags; ++i)
+	{
+		SDL_RenderCopy(renderer, flag, NULL, &flagRect);
+		SDL_RenderDrawRect(renderer, &flagRect);
+		flagRect.x += flagRect.w;
+	}
+	for (int i = me.flags; i < FLAG_LIMIT; ++i)
+	{
+		SDL_RenderDrawRect(renderer, &flagRect);
+		flagRect.x += flagRect.w;
+	}
+	flagRect.x = WINDOW_WIDTH - OFFSET - flagRect.w;
+	for (int i = 0; i < opponent.flags; ++i)
+	{
+		SDL_RenderCopy(renderer, flag, NULL, &flagRect);
+		SDL_RenderDrawRect(renderer, &flagRect);
+		flagRect.x -= flagRect.w;
+	}
+	for (int i = opponent.flags; i < FLAG_LIMIT; ++i)
+	{
+		SDL_RenderDrawRect(renderer, &flagRect);
+		flagRect.x -= flagRect.w;
+	}
+	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+}
+
+void Game::displayReloadTime()
+{
+	SDL_Color oldColor;
+	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	SDL_Rect reloadRect = {OFFSET, WINDOW_WIDTH + 7 * OFFSET / 2, (WINDOW_WIDTH - 2 * OFFSET) / RELOAD, OFFSET};
+	for (int i = 0; i < RELOAD - reloadTime; ++i)
+	{
+		SDL_RenderCopyEx(renderer, bullet, NULL, &reloadRect, 90, NULL, SDL_FLIP_NONE);
+		reloadRect.x += reloadRect.w;
+	}
+	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
 }
 
 // @TODO: enhance the messages
@@ -323,9 +400,8 @@ void Game::finish()
 
 /*
 	@TODO:
-	1. display bars - health, reload time, flags
-	2. gameEnd function (after story finalised)
-	3. appropriate delays on capture/death/end
+	1. gameEnd function (after story finalised?)
+	2. appropriate delays on capture/death/end
+	3. mega bullet powerup?
 	4. check if possible for players to move to same pos at same time
-	5. mega bullet powerup?
 */

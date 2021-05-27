@@ -12,7 +12,7 @@ void Menu::displayLines()
 		if (!lines[i].empty())
 		{
 			strcpy(msg, lines[i].c_str());
-			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 3 * OFFSET, WINDOW_HEIGHT / 4 + OFFSET * i);
+			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 6 * OFFSET, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 		}
 	}
 	SDL_RenderPresent(renderer);

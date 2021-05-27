@@ -22,7 +22,5 @@ void Theme::setTheme(int themeNumber, SDL_Renderer *renderer)
 	default:
 		return;
 	}
-	SDL_RenderClear(renderer);
 	SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-	SDL_RenderPresent(renderer);
 }

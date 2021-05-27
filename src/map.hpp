@@ -11,7 +11,7 @@ using namespace std;
 
 struct Map
 {
-	static vector<vector<int>> map;
+	static vector<vector<bool>> map;
 
 	static void setMap(int mapNumber = 5);
 

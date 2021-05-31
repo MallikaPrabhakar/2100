@@ -1,6 +1,6 @@
 #include "menu.hpp"
 
-vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY"}, Menu::exitLines, Menu::lines;
+vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::exitLines, Menu::lines;
 SDL_Renderer *Menu::renderer;
 
 void Menu::displayLines()
@@ -71,6 +71,23 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 				lines = {"ENTER IP ADDRESS", "127.0.0.1"};
 			}
 		}
+		else if (key == SDLK_s)
+		{
+			mode = STORY;
+			lines = {"HAHA", "YOU HAVEN'T CONNECTED THEM YET", "PRESS ENTER TO GO BACK"};
+			//Intro::initIntro(); @TODO: how the hell do i intermix them :'(
+		}
+		else if (key == SDLK_r)
+		{
+			mode = RULES;
+			lines = {"Players start with 10 health and zero flags",
+					 "Collect 10 flags first to win",
+					 "Use arrow keys to move in that direction",
+					 "Collect green thingy to gain 2 health",
+					 "Touching the bomb thingy makes health decrease by 2",
+					 "Being shot decreases health by 1",
+					 "And that's it! welcome to the hunger games! press enter to go back to main menu"};
+		}
 		else if (key == SDLK_p)
 		{
 			if (!Network::done)
@@ -108,6 +125,23 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 		}
 	}
+	else if (mode == STORY)
+	{
+		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
+		{
+			mode = MAIN_MENU;
+			lines = serverMenuLines;
+		}
+	}
+	else if (mode == RULES)
+	{
+		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
+		{
+			mode = MAIN_MENU;
+			lines = serverMenuLines;
+		}
+	}
+
 	else if (mode == CONNECT)
 	{
 		if ((key >= SDLK_0 && key <= SDLK_9) || key == SDLK_PERIOD)

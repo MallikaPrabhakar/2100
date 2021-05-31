@@ -15,7 +15,7 @@ struct Map
 
 	static void setMap(int mapNumber = 5);
 
-	static void setBasicMap();				//sets the basic map boundaries and home bases
+	static void setBasicMap(); //sets the basic map boundaries and home bases
 	static int sendMap();
 	static int recvMap();
 };

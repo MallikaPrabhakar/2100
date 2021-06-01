@@ -7,6 +7,7 @@
 #include "menu.hpp"
 #include "map.hpp"
 #include "game.hpp"
+#include "intro.hpp"
 
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 {
@@ -48,7 +49,7 @@ int main()
 
 	Theme::setTheme(1, renderer);
 	Menu::renderer = renderer;
-
+	Intro::initIntro();
 	int player = Menu::whichPlayer();
 	if (player == -1)
 		handleExit(renderer, window);

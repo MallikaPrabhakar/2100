@@ -38,7 +38,8 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	SDL_SetRenderTarget(renderer, NULL);
 
 	vector<SDL_Texture *> tempVector = {mapTexture, tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
-	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture) { return texture == NULL; }))
+	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
+			   { return texture == NULL; }))
 	{
 		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
 		return -1;

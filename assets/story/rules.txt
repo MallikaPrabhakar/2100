@@ -1,0 +1,7 @@
+Players start with 10 health and zero flags
+Collect 10 flags first to win
+Use arrow keys to move in that direction
+Collect green thingy to gain 2 health
+Touching the bomb thingy makes health decrease by 2
+Being shot decreases health by 1
+And that's it! welcome to the hunger game

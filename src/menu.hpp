@@ -10,6 +10,7 @@
 #include "map.hpp"
 #include "networking.hpp"
 #include "game.hpp"
+#include "intro.hpp"
 
 using namespace std;
 
@@ -17,7 +18,15 @@ struct Menu
 {
 	enum modes
 	{
-		MAIN_MENU, THEME, MAP, CONNECT, LOOK, PLAY, QUIT = -1
+		MAIN_MENU,
+		THEME,
+		MAP,
+		CONNECT,
+		LOOK,
+		STORY,
+		RULES,
+		PLAY,
+		QUIT = -1
 	};
 
 	static SDL_Renderer *renderer;

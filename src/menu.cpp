@@ -59,7 +59,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		else if (key == SDLK_m && Game::isServer)
 		{
 			mode = MAP;
-			lines = {"(1) WINDMILL", "(2) TUNNELS", "(3) BAMBOO", "(4) RUINS", "(5) HONEYCOMB", "(6) RANDOM"};
+			lines = {"(0) CHOOSE ONE FOR ME", "(1) WINDMILL", "(2) TUNNELS", "(3) BAMBOO", "(4) RUINS", "(5) HONEYCOMB", "(6) RANDOM"};
 		}
 		else if (key == SDLK_c)
 		{
@@ -97,9 +97,9 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 	}
 	else if (mode == MAP)
 	{
-		if (key >= SDLK_1 && key <= SDLK_6)
+		if (key >= SDLK_0 && key <= SDLK_6)
 		{
-			Map::setMap(key - SDLK_1);
+			Map::setMap(key - SDLK_0);
 			// @TODO: display preview
 		}
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)

@@ -2,8 +2,10 @@
 #define MAP_H
 
 #include <vector>
+#include <stack>
 #include <random>
 #include "networking.hpp"
+#include <iostream>
 
 using namespace std;
 
@@ -13,9 +15,9 @@ struct Map
 {
 	static vector<vector<bool>> map;
 
-	static void setMap(int mapNumber = 5);
-
-	static void setBasicMap();				//sets the basic map boundaries and home bases
+	static void setMap(int mapNumber = 0);
+	static void generateRandomMaze();
+	static void setBasicMap(); // sets the basic map boundaries and home bases
 	static int sendMap();
 	static int recvMap();
 };

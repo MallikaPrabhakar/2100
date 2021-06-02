@@ -331,7 +331,80 @@ void Map::setMap(int mapNumber)
 
 void Map::generateRandomMaze()
 {
-	
+	assert(MAP_SIZE & 1);
+	vector<vector<array<bool, 4>>> walls = generateRandomWalls();
+
+	for (int i = 0; i < MAP_SIZE / 2; ++i)
+	{
+		vector<bool> col1(MAP_SIZE, 0), col2(MAP_SIZE, 0);
+		assert(walls[i][0][0]);
+		col1[0] = col2[0] = 1;
+		for (int j = 0; j < MAP_SIZE / 2; ++j)
+		{
+			if (walls[i][j][3])
+				col1[2 * j] = col1[2 * j + 1] = col1[2 * j + 2] = 1;
+			if (walls[i][j][2])
+				col1[2 * j + 2] = col2[2 * j + 2] = 1;
+		}
+		map[2 * i] = col1;
+		map[2 * i + 1] = col2;
+	}
+
+	removeWalls();
+}
+
+vector<vector<array<bool, 4>>> Map::generateRandomWalls()
+{
+	srand(time(NULL));
+	vector<vector<bool>> visited(MAP_SIZE / 2, vector<bool>(MAP_SIZE / 2, 0));
+	vector<vector<array<bool, 4>>> walls(visited.size(), vector<array<bool, 4>>(visited[0].size(), {1, 1, 1, 1}));
+	stack<pair<int, int>> partlyProcessed;
+	pair<int, int> xy = {rand() % (MAP_SIZE / 2), rand() % (MAP_SIZE / 2)};
+
+	while (true)
+	{
+		visited[xy.first][xy.second] = 1;
+		vector<int> directions;
+		if (xy.second != 0 && !visited[xy.first][xy.second - 1])
+			directions.push_back(0);
+		if (xy.first != MAP_SIZE / 2 - 1 && !visited[xy.first + 1][xy.second])
+			directions.push_back(1);
+		if (xy.second != MAP_SIZE / 2 - 1 && !visited[xy.first][xy.second + 1])
+			directions.push_back(2);
+		if (xy.first != 0 && !visited[xy.first - 1][xy.second])
+			directions.push_back(3);
+
+		if (directions.empty())
+		{
+			if (partlyProcessed.empty())
+				break;
+			xy = partlyProcessed.top();
+			partlyProcessed.pop();
+			continue;
+		}
+
+		if (directions.size() > 1)
+			partlyProcessed.push(xy);
+		int direction = directions[rand() % directions.size()];
+		walls[xy.first][xy.second][direction] = 0;
+		if (direction == 0)
+			--xy.second;
+		else if (direction == 1)
+			++xy.first;
+		else if (direction == 2)
+			++xy.second;
+		else
+			--xy.first;
+		walls[xy.first][xy.second][(direction + 2) % 4] = 0;
+	}
+
+	return walls;
+}
+
+// @TODO: implement this
+void Map::removeWalls()
+{
+
 }
 
 void Map::setBasicMap()

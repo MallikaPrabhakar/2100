@@ -4,7 +4,7 @@ SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::b
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
-Player Game::me(1), Game::opponent(3);
+Player Game::me(2), Game::opponent(0);
 int Game::reloadTime;
 
 int Game::renderInit(SDL_Renderer *sourceRenderer)
@@ -49,7 +49,7 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
-	me.dir = 1, opponent.dir = 3;
+	me.dir = 2, opponent.dir = 0;
 	if (!isServer)
 		swap(me, opponent);
 

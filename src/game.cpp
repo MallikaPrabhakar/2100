@@ -7,35 +7,17 @@ bool Game::isServer;
 Player Game::me(2), Game::opponent(0);
 int Game::reloadTime;
 
-int Game::renderInit(SDL_Renderer *sourceRenderer)
+int Game::renderInit()
 {
-	renderer = Object::renderer = sourceRenderer;
 	if ((isServer ? Map::sendMap() : Map::recvMap()) != 0)
 	{
 		Menu::exitLines = {"UNABLE TO SEND/RECEIVE MAP"};
 		return -1;
 	}
 
-	initTextures();
 	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_WIDTH});
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
-	SDL_SetRenderTarget(renderer, mapTexture);
-	SDL_Rect rect = {0, 0, TILE_SIZE, TILE_SIZE};
-	for (int i = 0; i < MAP_SIZE; ++i)
-		for (int j = 0; j < MAP_SIZE; ++j)
-		{
-			rect.x = TILE_SIZE * i;
-			rect.y = TILE_SIZE * j;
-			if (i == 1 && j == 1)
-				SDL_RenderCopy(renderer, home1, NULL, &rect);
-			else if (i == 23 && j == 23)
-				SDL_RenderCopy(renderer, home2, NULL, &rect);
-			else if (Map::map[i][j] == 0)
-				SDL_RenderCopy(renderer, tile, NULL, &rect);
-			else if (Map::map[i][j] == 1)
-				SDL_RenderCopy(renderer, wall, NULL, &rect);
-		}
-	SDL_SetRenderTarget(renderer, NULL);
+	genMapTexture(mapTexture);
 
 	vector<SDL_Texture *> tempVector = {mapTexture, tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
 	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
@@ -59,8 +41,30 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	return 0;
 }
 
-void Game::initTextures()
+void Game::genMapTexture(SDL_Texture *texture, int size, int x, int y)
 {
+	SDL_SetRenderTarget(renderer, texture);
+	SDL_Rect rect = {x, y, size, size};
+	for (int i = 0; i < MAP_SIZE; ++i)
+		for (int j = 0; j < MAP_SIZE; ++j)
+		{
+			rect.x = size * i;
+			rect.y = size * j;
+			if (i == 1 && j == 1)
+				SDL_RenderCopy(renderer, home1, NULL, &rect);
+			else if (i == 23 && j == 23)
+				SDL_RenderCopy(renderer, home2, NULL, &rect);
+			else if (Map::map[i][j] == 0)
+				SDL_RenderCopy(renderer, tile, NULL, &rect);
+			else if (Map::map[i][j] == 1)
+				SDL_RenderCopy(renderer, wall, NULL, &rect);
+		}
+	SDL_SetRenderTarget(renderer, NULL);
+}
+
+void Game::initTextures(SDL_Renderer *sourceRenderer)
+{
+	renderer = Object::renderer = sourceRenderer;
 	SDL_Surface *surface;
 
 	//normal tiles- movable space
@@ -104,7 +108,6 @@ void Game::initTextures()
 
 void Game::loopGame()
 {
-	srand(time(NULL));
 	SDL_Event e;
 	while (true)
 	{
@@ -212,7 +215,10 @@ int Game::recvPlayerInfo()
 	opponent.pos.y = info[2] * TILE_SIZE;
 	opponent.dir = info[3];
 	if (info[4] == 1)
+	{
 		Bullet::bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
+		// @SOUND shoot sound
+	}
 	return 0;
 }
 
@@ -241,6 +247,7 @@ bool Game::updateBullets()
 		if (p == make_pair(me.pos.x, me.pos.y))
 		{
 			Bullet::bullets.erase(it++);
+			// @SOUND hit sound
 			if (--me.health <= 0)
 				return me.health = 0, true;
 			continue;
@@ -248,6 +255,7 @@ bool Game::updateBullets()
 		if (p == make_pair(opponent.pos.x, opponent.pos.y))
 		{
 			Bullet::bullets.erase(it++);
+			// @SOUND hit sound
 			if (--opponent.health <= 0)
 				return opponent.health = 0, true;
 			continue;
@@ -259,16 +267,16 @@ bool Game::updateBullets()
 
 int Game::updateAndSendSpawnables()
 {
+	srand(time(NULL));
 	pair<int, int> Pos = {-1, -1};
 	int type = 0;
-	if (Spawnable::flagsOnMap == 0)
+	if (Spawnable::flagsOnMap == 0 && rand() * 1.0 / RAND_MAX < SPAWN_PROB)
 		Pos = spawnObject(0);
-	else if (Spawnable::healthsOnMap < MAX_SPAWN)
-		if (rand() * 1.0 / RAND_MAX < SPAWN_PROB)
-		{
-			type = rand() * 1.0 / RAND_MAX < 0.5 ? 1 : -1;
-			Pos = spawnObject(type > 0 ? 2 : -2);
-		}
+	else if (Spawnable::healthsOnMap < MAX_SPAWN && rand() * 1.0 / RAND_MAX < SPAWN_PROB)
+	{
+		type = rand() * 1.0 / RAND_MAX < 0.5 ? 1 : -1;
+		Pos = spawnObject(type > 0 ? 2 : -2);
+	}
 	char info[MSG_SIZE] = {-1};
 	if (Pos == make_pair(-1, -1))
 		return Network::sendRequest(info, MSG_SIZE);
@@ -291,6 +299,7 @@ pair<int, int> Game::spawnObject(int healthDelta)
 			++Spawnable::healthsOnMap;
 		else
 			++Spawnable::flagsOnMap;
+		// @SOUND spawn sound here
 		return Pos;
 	}
 }
@@ -304,6 +313,7 @@ int Game::recvSpawnInfo()
 		return info[0] + 1;
 	pair<int, int> Pos = {info[1] * TILE_SIZE, info[2] * TILE_SIZE};
 	Spawnable::spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
+	// @SOUND spawn sound here
 	return 0;
 }
 
@@ -399,11 +409,3 @@ void Game::finish()
 		Menu::exitLines = {"THE GAME ENDED!, YOU WON"};
 	}
 }
-
-/*
-	@TODO:
-	1. gameEnd function (after story finalised?)
-	2. appropriate delays on capture/death/end
-	3. mega bullet powerup?
-	4. check if possible for players to move to same pos at same time
-*/

@@ -1,6 +1,5 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
-#include <unistd.h>
 #include "font.hpp"
 #include "theme.hpp"
 #include "networking.hpp"
@@ -21,6 +20,7 @@ void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 
 int main()
 {
+	srand(time(NULL));
 	SDL_Window *window = SDL_CreateWindow("Capture the Flag!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
@@ -49,10 +49,11 @@ int main()
 
 	Theme::setTheme(1, renderer);
 	Menu::renderer = renderer;
+	// @SOUND play some calming/apocalyptic mild sound for the entire game
 	Intro::initIntro(renderer);
-	//display front page
-	//display plot
-	//choose player
+	// display front page
+	// display plot
+	// choose player
 
 	int player = Menu::whichPlayer();
 	if (player == -1)
@@ -69,12 +70,12 @@ int main()
 	}
 	else
 		Game::isServer = false;
-	//menu loop
 
+	Game::initTextures(renderer);
 	while (true)
 	{
 		if (Menu::menuLoop() == 0)
-			if (Game::renderInit(renderer) == 0)
+			if (Game::renderInit() == 0)
 				Game::loopGame();
 		if (Menu::exitMenu() == -1)
 			handleExit(renderer, window);

@@ -57,6 +57,7 @@ bool Player::updateHealthAndFlags()
 	{
 		Spawnable *spawnable = Spawnable::spawnables[Pos];
 		Spawnable::spawnables.erase(Pos);
+		// @SOUND collision sound x 3
 		if (spawnable->healthDelta == 0)
 		{
 			--Spawnable::flagsOnMap, flags++;

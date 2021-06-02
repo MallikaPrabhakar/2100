@@ -9,7 +9,6 @@
 #include "theme.hpp"
 #include "networking.hpp"
 #include "menu.hpp"
-#include <iostream>
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 1010
@@ -30,8 +29,9 @@ struct Game
 	static Player me, opponent;
 	static int reloadTime;
 
-	static int renderInit(SDL_Renderer *sourceRenderer);
-	static void initTextures();
+	static int renderInit();
+	static void initTextures(SDL_Renderer *sourceRenderer);
+	static void genMapTexture(SDL_Texture *texture, int size = TILE_SIZE, int x = 0, int y = 0);
 	static void loopGame();
 	static void handleKeyEvents(SDL_Keycode key);
 	static int recvPlayerInfo();

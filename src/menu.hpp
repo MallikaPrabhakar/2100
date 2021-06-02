@@ -12,6 +12,8 @@
 #include "game.hpp"
 #include "intro.hpp"
 
+#define PREVIEW_SIZE 16
+
 using namespace std;
 
 struct Menu
@@ -31,8 +33,10 @@ struct Menu
 
 	static SDL_Renderer *renderer;
 	static vector<string> serverMenuLines, clientMenuLines, exitLines, lines;
+	static SDL_Texture *mapTexture;
+	static SDL_Rect mapRect;
 
-	static void displayLines();
+	static void displayLines(bool displayMap = false);
 	static int whichPlayer();
 	static void handleMenuKeyEvents(int &mode, int key = -1);
 	static int menuLoop();

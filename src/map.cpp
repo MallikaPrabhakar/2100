@@ -10,7 +10,6 @@ void Map::setMap(int mapNumber)
 	switch (mapNumber)
 	{
 	case 0:
-		srand(time(NULL));
 		setMap(rand() % 5 + 1);
 		break;
 	case 1:
@@ -333,6 +332,7 @@ void Map::generateRandomMaze()
 {
 	assert(MAP_SIZE & 1);
 	vector<vector<array<bool, 4>>> walls = generateRandomWalls();
+	removeWalls(walls);
 
 	for (int i = 0; i < MAP_SIZE / 2; ++i)
 	{
@@ -349,13 +349,10 @@ void Map::generateRandomMaze()
 		map[2 * i] = col1;
 		map[2 * i + 1] = col2;
 	}
-
-	removeWalls();
 }
 
 vector<vector<array<bool, 4>>> Map::generateRandomWalls()
 {
-	srand(time(NULL));
 	vector<vector<bool>> visited(MAP_SIZE / 2, vector<bool>(MAP_SIZE / 2, 0));
 	vector<vector<array<bool, 4>>> walls(visited.size(), vector<array<bool, 4>>(visited[0].size(), {1, 1, 1, 1}));
 	stack<pair<int, int>> partlyProcessed;
@@ -401,10 +398,38 @@ vector<vector<array<bool, 4>>> Map::generateRandomWalls()
 	return walls;
 }
 
-// @TODO: implement this
-void Map::removeWalls()
+void Map::removeWalls(vector<vector<array<bool, 4>>> &walls)
 {
-
+	int removed = 0;
+	while (removed < (MAP_SIZE / 2) * (MAP_SIZE / 2) * REMOVE_PROB)
+	{
+		int row = rand() % (MAP_SIZE / 2), col = rand() % (MAP_SIZE / 2);
+		vector<int> directions;
+		if (row != 0 && walls[col][row][0])
+			directions.push_back(0);
+		if (col != MAP_SIZE / 2 - 1 && walls[col][row][1])
+			directions.push_back(1);
+		if (row != MAP_SIZE / 2 - 1 && walls[col][row][2])
+			directions.push_back(2);
+		if (col != 0 && walls[col][row][3])
+			directions.push_back(3);
+		for (int direction : directions)
+		{
+			if (rand() * 1.0 / RAND_MAX >= REMOVE_PROB)
+				continue;
+			++removed;
+			walls[col][row][direction] = 0;
+			if (direction == 0)
+				--row;
+			else if (direction == 1)
+				++col;
+			else if (direction == 2)
+				++row;
+			else
+				--col;
+			walls[col][row][(direction + 2) % 4] = 0;
+		}
+	}
 }
 
 void Map::setBasicMap()

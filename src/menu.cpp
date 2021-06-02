@@ -2,8 +2,10 @@
 
 vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::exitLines, Menu::lines;
 SDL_Renderer *Menu::renderer;
+SDL_Texture *Menu::mapTexture;
+SDL_Rect Menu::mapRect = {(WINDOW_WIDTH - PREVIEW_SIZE * MAP_SIZE) / 2, WINDOW_HEIGHT - (PREVIEW_SIZE * MAP_SIZE + OFFSET), (PREVIEW_SIZE * MAP_SIZE), (PREVIEW_SIZE * MAP_SIZE)};
 
-void Menu::displayLines()
+void Menu::displayLines(bool displayMap)
 {
 	SDL_RenderClear(renderer);
 	for (int i = 0; i < lines.size(); ++i)
@@ -12,9 +14,11 @@ void Menu::displayLines()
 		if (!lines[i].empty())
 		{
 			strcpy(msg, lines[i].c_str());
-			displayText(renderer, msg, Fonts::fonts[1], WINDOW_WIDTH / 2 - 6 * OFFSET, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
+			Fonts::displayText(renderer, msg, 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 		}
 	}
+	if (displayMap)
+		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
 	SDL_RenderPresent(renderer);
 }
 
@@ -72,9 +76,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 			}
 		}
 		else if (key == SDLK_s)
-		{
 			Intro::displayPlot();
-		}
 		else if (key == SDLK_r)
 		{
 			mode = RULES;
@@ -84,7 +86,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 					 "Collect green thingy to gain 2 health",
 					 "Touching the bomb thingy makes health decrease by 2",
 					 "Being shot decreases health by 1",
-					 "And that's it! welcome to the hunger games! press enter to go back to main menu"};
+					 "And that's it! welcome to the hunger games!", "Press enter to go back to main menu"};
 		}
 		else if (key == SDLK_p)
 		{
@@ -115,20 +117,12 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		if (key >= SDLK_0 && key <= SDLK_6)
 		{
 			Map::setMap(key - SDLK_0);
-			// @TODO: display preview
+			Game::genMapTexture(mapTexture, PREVIEW_SIZE, WINDOW_WIDTH - 75, WINDOW_HEIGHT - 175);
 		}
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
 			mode = MAIN_MENU;
 			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
-		}
-	}
-	else if (mode == STORY)
-	{
-		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
-		{
-			mode = MAIN_MENU;
-			lines = serverMenuLines;
 		}
 	}
 	else if (mode == RULES)
@@ -176,7 +170,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		lines = serverMenuLines;
 	}
 
-	displayLines();
+	displayLines(mode == MAP);
 }
 
 int Menu::menuLoop()
@@ -184,8 +178,12 @@ int Menu::menuLoop()
 	SDL_Event e;
 	int mode = MAIN_MENU, key;
 	Network::done = false;
+
 	if (Game::isServer)
 		Map::setMap();
+	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, PREVIEW_SIZE * MAP_SIZE, PREVIEW_SIZE * MAP_SIZE);
+	Game::genMapTexture(mapTexture, PREVIEW_SIZE, mapRect.x, mapRect.y);
+
 	lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 	exitLines.clear();
 	while (true)

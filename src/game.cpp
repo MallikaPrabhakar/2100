@@ -49,6 +49,7 @@ int Game::renderInit(SDL_Renderer *sourceRenderer)
 	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
+	me.dir = 2, opponent.dir = 0;
 	if (!isServer)
 		swap(me, opponent);
 

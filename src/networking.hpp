@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 
 #define PORT 4263 // equals GAME on keypad
@@ -22,6 +21,7 @@ struct Network
 	 * 3 = unable to send info
 	 * 4 = unable to recv info
 	 * 5 = unable to set timeout
+	 * 6 = unable to find client (look/accept)
 	*/
 
 	static void initServer(const char *ip = NULL);

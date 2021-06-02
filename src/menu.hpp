@@ -23,7 +23,7 @@ struct Menu
 		MAP,
 		CONNECT,
 		LOOK,
-		STORY,
+		STORY, //plot
 		RULES,
 		PLAY,
 		QUIT = -1

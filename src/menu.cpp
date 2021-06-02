@@ -73,9 +73,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		}
 		else if (key == SDLK_s)
 		{
-			mode = STORY;
-			lines = {"HAHA", "YOU HAVEN'T CONNECTED THEM YET", "PRESS ENTER TO GO BACK"};
-			//Intro::initIntro(); @TODO: how the hell do i intermix them :'(
+			Intro::displayPlot();
 		}
 		else if (key == SDLK_r)
 		{

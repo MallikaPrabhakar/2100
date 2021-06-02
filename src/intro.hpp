@@ -24,11 +24,12 @@ struct Intro
 	static vector<string> story, firstPage;
 
 	static void displayPlot();
-	static void displayStartingPage();
+	//DIslpay plot: story dispplay: scroll!
+	static void displayStartingPage(); //?
 	static void exitIntro();				//goes to menu
 	static void loadMedia(int number);			//loads meadia
 	static void loadText(int number); 	//1 for first page, 2 for story plot
-	static void initIntro();			//initializes vectors
+	static void initIntro(SDL_Renderer *renderer);			//initializes vectors
 };
 
 #endif

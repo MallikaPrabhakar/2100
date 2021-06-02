@@ -48,18 +48,30 @@ void Intro::loadMedia(int name){
 }
 void Intro::displayPlot()
 {
+	//intro
+	//scrolling? -- auto scroll or manual??
+	//auto scroll-- skip??
+	//random key press: skip plot
+	//return;
+	//next function called is choose player.
+
 }
 
 void Intro::displayStartingPage()
 {
+	//single image
+	//random key press: goes to intro
 }
 
 void Intro::exitIntro()
 {
 }
 
-void Intro::initIntro()
+void Intro::initIntro( SDL_Renderer *srcRender)
 {
 	loadText(1);
 	loadText(2);
+	renderer=srcRender;
+
+
 }

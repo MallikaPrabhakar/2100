@@ -49,7 +49,11 @@ int main()
 
 	Theme::setTheme(1, renderer);
 	Menu::renderer = renderer;
-	Intro::initIntro();
+	Intro::initIntro(renderer);
+	//display front page
+	//display plot
+	//choose player
+
 	int player = Menu::whichPlayer();
 	if (player == -1)
 		handleExit(renderer, window);
@@ -65,6 +69,7 @@ int main()
 	}
 	else
 		Game::isServer = false;
+	//menu loop
 
 	while (true)
 	{

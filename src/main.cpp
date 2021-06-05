@@ -58,7 +58,7 @@ int main()
 		{
 			break;
 		}
-		if (Menu::exitMenu() == -1)
+		if (Menu::exitMenu("START SCREEN") == -1)
 			handleExit(renderer, window);
 	}
 	//for plot
@@ -68,7 +68,7 @@ int main()
 		{
 			break;
 		}
-		if (Menu::exitMenu() == -1)
+		if (Menu::exitMenu("STORY") == -1)
 			handleExit(renderer, window);
 	}
 
@@ -79,7 +79,7 @@ int main()
 		{
 			break;
 		}
-		if (Menu::exitMenu() == -1)
+		if (Menu::exitMenu("RULES") == -1)
 			handleExit(renderer, window);
 	}
 
@@ -88,11 +88,11 @@ int main()
 	{
 		int player = Menu::whichPlayer();
 		if (player == -1)
-			if (Menu::exitMenu() == -1)
+			if (Menu::exitMenu("PLAYER SELECTION SCREEN") == -1)
 				handleExit(renderer, window);
 			else
 				continue;
-			
+
 		if (player == 1)
 		{
 			Game::isServer = true;
@@ -114,7 +114,7 @@ int main()
 		if (Menu::menuLoop() == 0)
 			if (Game::renderInit() == 0)
 				Game::loopGame();
-		if (Menu::exitMenu() == -1)
+		if (Menu::exitMenu("MAIN MENU") == -1)
 			handleExit(renderer, window);
 	}
 }

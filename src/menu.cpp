@@ -77,11 +77,11 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		}
 		else if (key == SDLK_s)
 		{
-			Intro::displayPlot();
+			mode = STORY;
 		}
 		else if (key == SDLK_r)
 		{
-			Intro::displayRules();
+			mode = RULES;
 		}
 		else if (key == SDLK_p)
 		{
@@ -120,14 +120,28 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 		}
 	}
-	/*else if (mode == RULES)
+	else if (mode == RULES)
 	{
-		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
+		if (Intro::displayRules() == -1)
+		{
+			mode = QUIT;
+		}
+		else
 		{
 			mode = MAIN_MENU;
-			lines = serverMenuLines;
 		}
-	}*/
+	}
+	else if (mode == STORY)
+	{
+		if (Intro::displayPlot() == -1)
+		{
+			mode = QUIT;
+		}
+		else
+		{
+			mode = MAIN_MENU;
+		}
+	}
 
 	else if (mode == CONNECT)
 	{
@@ -199,10 +213,10 @@ int Menu::menuLoop()
 	}
 }
 
-int Menu::exitMenu()
+int Menu::exitMenu(string target)
 {
 	lines = exitLines;
-	lines.push_back("[M]AIN MENU");
+	lines.push_back("[G]O BACK TO "+target);
 	lines.push_back("[Q]UIT");
 	SDL_Event e;
 	while (true)
@@ -218,7 +232,7 @@ int Menu::exitMenu()
 				case SDLK_q:
 					return -1;
 
-				case SDLK_m:
+				case SDLK_g:
 					return 0;
 					break;
 				}

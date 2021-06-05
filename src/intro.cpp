@@ -66,6 +66,7 @@ int Intro::displayPlot()
 {
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, plotTexture, NULL, NULL);
+	Fonts::displayText(renderer,'A', 30,0,100,Theme::textColor);
 	SDL_RenderPresent(renderer);
 	SDL_Event e;
 	while (true)

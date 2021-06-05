@@ -40,7 +40,7 @@ struct Menu
 	static int whichPlayer();
 	static void handleMenuKeyEvents(int &mode, int key = -1);
 	static int menuLoop();
-	static int exitMenu();
+	static int exitMenu(string target);
 };
 
 #endif

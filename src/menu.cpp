@@ -76,17 +76,12 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 			}
 		}
 		else if (key == SDLK_s)
+		{
 			Intro::displayPlot();
+		}
 		else if (key == SDLK_r)
 		{
-			mode = RULES;
-			lines = {"Players start with 10 health and zero flags",
-					 "Collect 10 flags first to win",
-					 "Use arrow keys to move in that direction",
-					 "Collect green thingy to gain 2 health",
-					 "Touching the bomb thingy makes health decrease by 2",
-					 "Being shot decreases health by 1",
-					 "And that's it! welcome to the hunger games!", "Press enter to go back to main menu"};
+			Intro::displayRules();
 		}
 		else if (key == SDLK_p)
 		{
@@ -125,14 +120,14 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 			lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 		}
 	}
-	else if (mode == RULES)
+	/*else if (mode == RULES)
 	{
 		if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
 			mode = MAIN_MENU;
 			lines = serverMenuLines;
 		}
-	}
+	}*/
 
 	else if (mode == CONNECT)
 	{

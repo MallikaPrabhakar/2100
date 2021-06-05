@@ -51,26 +51,62 @@ int main()
 	Menu::renderer = renderer;
 	// @SOUND play some calming/apocalyptic mild sound for the entire game
 	Intro::initIntro(renderer);
-	Intro::introLoop();
-	// display front page
-	// display plot
-	// choose player
-
-	int player = Menu::whichPlayer();
-	if (player == -1)
-		handleExit(renderer, window);
-	if (player == 1)
+	//for starting page
+	while (true)
 	{
-		Game::isServer = true;
-		int ret = Network::makeServer();
-		if (ret != 0)
+		if (Intro::displayStartingPage() == 0)
 		{
-			printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
-			handleExit(renderer, window);
+			break;
 		}
+		if (Menu::exitMenu() == -1)
+			handleExit(renderer, window);
 	}
-	else
-		Game::isServer = false;
+	//for plot
+	while (true)
+	{
+		if (Intro::displayPlot() == 0)
+		{
+			break;
+		}
+		if (Menu::exitMenu() == -1)
+			handleExit(renderer, window);
+	}
+
+	//for rules
+	while (true)
+	{
+		if (Intro::displayRules() == 0)
+		{
+			break;
+		}
+		if (Menu::exitMenu() == -1)
+			handleExit(renderer, window);
+	}
+
+	//for choosing player
+	while (true)
+	{
+		int player = Menu::whichPlayer();
+		if (player == -1)
+			if (Menu::exitMenu() == -1)
+				handleExit(renderer, window);
+			else
+				continue;
+			
+		if (player == 1)
+		{
+			Game::isServer = true;
+			int ret = Network::makeServer();
+			if (ret != 0)
+			{
+				printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
+				handleExit(renderer, window);
+			}
+		}
+		else
+			Game::isServer = false;
+		break;
+	}
 
 	Game::initTextures(renderer);
 	while (true)

@@ -18,7 +18,7 @@ struct Fonts
 
 	static int initFonts();
 
-	static void displayText(SDL_Renderer *renderer, char *text, int fontNum, int x, int y, SDL_Color color = Theme::textColor);
+	static void displayText(SDL_Renderer *renderer, const char *text, int fontNum, int x, int y, SDL_Color color = Theme::textColor);
 };
 
 #endif

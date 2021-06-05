@@ -21,13 +21,17 @@ using namespace std;
 struct Intro
 {
 	static SDL_Renderer *renderer;
+	static SDL_Surface *frontPage;
+	static SDL_Texture *frontPageTexture;
+	static SDL_Surface *plot;
+	static SDL_Texture *plotTexture;
 	static vector<string> story, firstPage;
 
-	static void displayPlot();
+	static int displayPlot();
 	//DIslpay plot: story dispplay: scroll!
-	static void displayStartingPage(); //?
-	static void exitIntro();				//goes to menu
-	static void loadMedia(int number);			//loads meadia
+	static int displayStartingPage(); //?
+	static void introLoop();				//goes to menu
+	static void loadMedia();			//loads meadia
 	static void loadText(int number); 	//1 for first page, 2 for story plot
 	static void initIntro(SDL_Renderer *renderer);			//initializes vectors
 };

@@ -51,6 +51,7 @@ int main()
 	Menu::renderer = renderer;
 	// @SOUND play some calming/apocalyptic mild sound for the entire game
 	Intro::initIntro(renderer);
+	Intro::introLoop();
 	// display front page
 	// display plot
 	// choose player

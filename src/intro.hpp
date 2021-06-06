@@ -31,6 +31,7 @@ struct Intro
 	//DIslpay plot: story dispplay: scroll!
 	static int displayStartingPage(); //?
 	static int displayRules();
+	static void displayLines(vector<string> vec);
 	static void loadMedia();			//loads meadia
 	static void loadText(); 	//1 for first page, 2 for story plot
 	static void initIntro(SDL_Renderer *renderer);	

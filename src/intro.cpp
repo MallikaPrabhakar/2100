@@ -58,16 +58,20 @@ void Intro::loadMedia()
 	frontPageTexture = SDL_CreateTextureFromSurface(renderer, surface);
 	surface = IMG_Load("../assets/story/plot.png");
 	plotTexture = SDL_CreateTextureFromSurface(renderer, surface);
-	surface = IMG_Load("../assets/story/firstPage.png");
+	surface = IMG_Load("../assets/story/rules.png");
 	rulesTexture = SDL_CreateTextureFromSurface(renderer, surface);
+}
+
+void Intro::displayLines(vector<string> vec)
+{
+	for (int i = 0; i < vec.size(); ++i)
+		if (!vec[i].empty())
+			Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 }
 
 int Intro::displayPlot()
 {
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, plotTexture, NULL, NULL);
-	Fonts::displayText(renderer,'A', 30,0,100,Theme::textColor);
-	SDL_RenderPresent(renderer);
+
 	SDL_Event e;
 	while (true)
 	{
@@ -82,15 +86,17 @@ int Intro::displayPlot()
 				default:
 					return 0;
 				}
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, plotTexture, NULL, NULL);
+		displayLines(story);
+		SDL_RenderPresent(renderer);
 	}
 	return 0;
 }
 
 int Intro::displayRules()
 {
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, rulesTexture, NULL, NULL);
-	SDL_RenderPresent(renderer);
+
 	SDL_Event e;
 	while (true)
 	{
@@ -105,18 +111,22 @@ int Intro::displayRules()
 				default:
 					return 0;
 				}
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, rulesTexture, NULL, NULL);
+		displayLines(rules);
+		SDL_RenderPresent(renderer);
 	}
+
 	return 0;
 }
 
 int Intro::displayStartingPage()
 {
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, frontPageTexture, NULL, NULL);
-	SDL_RenderPresent(renderer);
+
 	SDL_Event e;
 	while (true)
 	{
+
 		if (SDL_PollEvent(&e))
 			if (e.type == SDL_QUIT)
 				return -1;
@@ -128,6 +138,10 @@ int Intro::displayStartingPage()
 				default:
 					return 0;
 				}
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, frontPageTexture, NULL, NULL);
+		displayLines(firstPage);
+		SDL_RenderPresent(renderer);
 	}
 }
 

@@ -16,7 +16,7 @@ using namespace std;
 	{                     \
 		0, 0, 0           \
 	}
-#define THEME1 "../assets/themes/tif_files/"
+#define THEME1 "../assets/themes/theme1/"
 
 #define THEME2_FONT \
 	{               \
@@ -26,7 +26,7 @@ using namespace std;
 	{                     \
 		255, 255, 255     \
 	}
-#define THEME2 "../assets/themes/tif_files/"
+#define THEME2 "../assets/themes/theme2/"
 
 class Theme
 {

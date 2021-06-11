@@ -5,13 +5,10 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include <fstream>
-#include "theme.hpp"
 #include "font.hpp"
-#include "map.hpp"
-#include "networking.hpp"
 #include "game.hpp"
-#include "menu.hpp"
 
 #define STORYPATH "../assets/story/story.txt"
 #define FIRSTPAGEPATH "../assets/story/firstPage.txt"

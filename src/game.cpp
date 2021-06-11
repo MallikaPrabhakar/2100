@@ -108,6 +108,7 @@ void Game::initTextures(SDL_Renderer *sourceRenderer)
 
 void Game::loopGame()
 {
+	// @SOUND game start
 	SDL_Event e;
 	while (true)
 	{
@@ -400,6 +401,7 @@ void Game::displayReloadTime()
 // @TODO: enhance the messages
 void Game::finish()
 {
+	// @SOUND on end (different on win/lose)
 	if (me.health == 0)
 	{
 		Menu::exitLines = {"THE GAME ENDED!, YOU LOST"};

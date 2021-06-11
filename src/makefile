@@ -1,5 +1,5 @@
-objects = theme.o font.o networking.o menu.o map.o game.o object.o main.o intro.o
-LIBS = -lSDL2_ttf -lSDL2_image -lpthread
+objects = theme.o font.o networking.o menu.o map.o game.o object.o intro.o main.o
+LIBS = -lSDL2_ttf -lSDL2_image
 CFLAGS = `sdl2-config --cflags`
 
 run: install
@@ -22,7 +22,7 @@ theme.o: theme.cpp theme.hpp
 font.o: font.cpp font.hpp theme.o
 	g++ -c $(CFLAGS) font.cpp
 
-intro.o: intro.cpp intro.hpp theme.o font.o map.o networking.o game.o
+intro.o: intro.cpp intro.hpp font.o game.o
 	g++ -c $(CFLAGS) intro.cpp
 
 networking.o: networking.cpp networking.hpp

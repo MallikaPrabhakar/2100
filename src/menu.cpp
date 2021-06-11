@@ -52,7 +52,9 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		if (key == SDLK_t)
 		{
 			mode = THEME;
-			lines = {"THEME [1]", "THEME [2]"};
+			lines = {};
+			for (int i = 1; i <= THEMECOUNT; ++i)
+				lines.push_back("THEME [" + to_string(i) + "]");
 		}
 		else if (key == SDLK_m && Game::isServer)
 		{

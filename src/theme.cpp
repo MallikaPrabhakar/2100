@@ -19,6 +19,12 @@ void Theme::setTheme(int themeNumber, SDL_Renderer *renderer)
 		themeSource = THEME2;
 		break;
 
+	case 3:
+		textColor = THEME3_FONT;
+		backgroundColor = THEME3_BACKGROUND;
+		themeSource = THEME3;
+		break;
+
 	default:
 		return;
 	}

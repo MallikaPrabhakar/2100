@@ -16,6 +16,7 @@
 
 using namespace std;
 
+// @SOUND on valid/invalid key press
 struct Menu
 {
 	enum modes

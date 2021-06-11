@@ -29,6 +29,8 @@ int main()
 		printf("Could not create window, error encountered: %s\n", SDL_GetError());
 		return 1;
 	}
+	SDL_Surface *iconSurface = IMG_Load("../assets/themes/tif_files/bomb.tif");
+	SDL_SetWindowIcon(window, iconSurface);
 
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == NULL)

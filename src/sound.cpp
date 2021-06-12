@@ -1,5 +1,8 @@
 #include "sound.hpp"
 
+Mix_Music *Sound::loop;
+Mix_Chunk *Sound::start, *Sound::win, *Sound::lose, *Sound::correct, *Sound::incorrect, *Sound::spawnable, *Sound::spawn_flag, *Sound::shoot, *Sound::bomb, *Sound::flag, *Sound::health, *Sound::bullet;
+
 int Sound::initSounds()
 {
 	loop = Mix_LoadMUS(LOOP_SOUND);
@@ -12,7 +15,7 @@ int Sound::initSounds()
 	incorrect = Mix_LoadWAV(INCORRECT_CLICK);
 
 	spawnable = Mix_LoadWAV(SPAWN_SPAWNABLE);
-	flag = Mix_LoadWAV(SPAWN_FLAG);
+	spawn_flag = Mix_LoadWAV(SPAWN_FLAG);
 	shoot = Mix_LoadWAV(SHOOT);
 
 	bomb = Mix_LoadWAV(BOMB_HIT);

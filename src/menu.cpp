@@ -60,6 +60,7 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 		{
 			mode = MAP;
 			lines = {"(0) CHOOSE ONE FOR ME", "(1) WINDMILL", "(2) TUNNELS", "(3) BAMBOO", "(4) RUINS", "(5) HONEYCOMB", "(6) RANDOM"};
+			Game::genMapTexture(mapTexture, PREVIEW_SIZE, WINDOW_WIDTH - 75, WINDOW_HEIGHT - 175);
 		}
 		else if (key == SDLK_c)
 		{
@@ -96,7 +97,10 @@ void Menu::handleMenuKeyEvents(int &mode, int key)
 	else if (mode == THEME)
 	{
 		if (key >= SDLK_1 && key <= SDLK_0 + THEMECOUNT)
+		{
 			Theme::setTheme(key - SDLK_0, renderer);
+			Game::initTextures(renderer);
+		}
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
 			mode = MAIN_MENU;
@@ -187,7 +191,6 @@ int Menu::menuLoop()
 	if (Game::isServer)
 		Map::setMap();
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, PREVIEW_SIZE * MAP_SIZE, PREVIEW_SIZE * MAP_SIZE);
-	Game::genMapTexture(mapTexture, PREVIEW_SIZE, mapRect.x, mapRect.y);
 
 	lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 	exitLines.clear();

@@ -26,7 +26,7 @@
 struct Sound
 {
 	static Mix_Music *loop;
-	static Mix_Chunk *start, *win, *lose, *correct, *incorrect, *spawnable, *flag, *shoot, *bomb, *flag, *health, *bullet;
+	static Mix_Chunk *start, *win, *lose, *correct, *incorrect, *spawnable, *spawn_flag, *shoot, *bomb, *flag, *health, *bullet;
 
 	static int initSounds();
 	static void playChunk(Mix_Chunk *chunk);

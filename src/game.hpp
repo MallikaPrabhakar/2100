@@ -1,14 +1,14 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <algorithm>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <algorithm>
 #include "object.hpp"
-#include "map.hpp"
 #include "theme.hpp"
+#include "map.hpp"
 #include "networking.hpp"
-#include "menu.hpp"
+#include "sound.hpp"
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 1010
@@ -32,7 +32,7 @@ struct Game
 	static int renderInit();
 	static int initTextures(SDL_Renderer *sourceRenderer);
 	static void genMapTexture(SDL_Texture *texture, int size = TILE_SIZE, int x = 0, int y = 0);
-	static void loopGame();
+	static string loopGame();
 	static void handleKeyEvents(SDL_Keycode key);
 	static int recvPlayerInfo();
 	static int sendPlayerInfo();
@@ -43,7 +43,7 @@ struct Game
 	static void displayHealthBars();
 	static void displayFlagsCount();
 	static void displayReloadTime();
-	static void finish();
+	static string finish(string message = "");
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include "font.hpp"
 #include "sound.hpp"
 #include "theme.hpp"
@@ -9,7 +10,9 @@
 #include "map.hpp"
 #include "game.hpp"
 
-//TODO: make theme 1 light and theme 2 dark because default should be white 
+using namespace std;
+
+//TODO: make theme 1 light and theme 2 dark because default should be white
 
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 {
@@ -17,6 +20,9 @@ void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 	close(Network::sockfd);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	IMG_Quit();
+	TTF_Quit();
+	Mix_Quit();
 	SDL_Quit();
 	exit(0);
 }
@@ -26,6 +32,7 @@ int main()
 	srand(time(NULL));
 
 	// init window
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	SDL_Window *window = SDL_CreateWindow("Capture the Flag!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
@@ -64,6 +71,7 @@ int main()
 		printf("Could not load sounds, error encountered: %s\n", SDL_GetError());
 		return 1;
 	}
+	Sound::startMusic();
 
 	// init theme
 	Theme::setTheme(1, renderer);
@@ -141,6 +149,7 @@ int main()
 				printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
 				handleExit(renderer, window);
 			}
+			Map::setMap();
 		}
 		else
 			Game::isServer = false;
@@ -151,9 +160,16 @@ int main()
 	while (true)
 	{
 		if (Menu::menuLoop() == 0)
+		{
 			if (Game::renderInit() == 0)
-				Game::loopGame();
-		if (Menu::exitMenu("MAIN MENU") == -1)
+				if (Menu::exitMenu("MAIN MENU", Game::loopGame()) == -1)
+					handleExit(renderer, window);
+				else
+					continue;
+			else if (Menu::exitMenu("MAIN MENU", "UNABLE TO SEND/RECEIVE MAP") == -1)
+				handleExit(renderer, window);
+		}
+		else if (Menu::exitMenu("MAIN MENU") == -1)
 			handleExit(renderer, window);
 	}
 }

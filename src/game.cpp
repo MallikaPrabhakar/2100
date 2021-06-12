@@ -10,10 +10,7 @@ int Game::reloadTime;
 int Game::renderInit()
 {
 	if ((isServer ? Map::sendMap() : Map::recvMap()) != 0)
-	{
-		Menu::exitLines = {"UNABLE TO SEND/RECEIVE MAP"};
 		return -1;
-	}
 
 	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_WIDTH});
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
@@ -27,10 +24,10 @@ int Game::renderInit()
 	if (!isServer)
 		swap(me, opponent);
 
-	Spawnable::healthsOnMap = Spawnable::flagsOnMap = 0;
+	Spawnable::healthsOnMap = Spawnable::flagsOnMap = 0, reloadTime = 0;
 	Spawnable::spawnables.clear();
 
-	return 0;
+	return isServer ? recvPlayerInfo() : sendPlayerInfo();
 }
 
 void Game::genMapTexture(SDL_Texture *texture, int size, int x, int y)
@@ -104,9 +101,9 @@ int Game::initTextures(SDL_Renderer *sourceRenderer)
 	return 0;
 }
 
-void Game::loopGame()
+string Game::loopGame()
 {
-	// @SOUND game start
+	Sound::playChunk(Sound::start);
 	SDL_Event e;
 	while (true)
 	{
@@ -115,35 +112,21 @@ void Game::loopGame()
 		if (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
-			{
-				Menu::exitLines = {"YOU LEFT THE GAME"};
-				return;
-			}
+				return finish("YOU LEFT THE GAME");
 			else if (e.type == SDL_KEYDOWN)
 				handleKeyEvents(e.key.keysym.sym);
 		}
 
 		if (sendPlayerInfo() != 0)
-		{
-			Menu::exitLines = {string("ERROR IN SENDING INFORMATION TO ") + (isServer ? "CLIENT" : "SERVER")};
-			return;
-		}
+			return finish(string("ERROR IN SENDING INFORMATION TO ") + (isServer ? "CLIENT" : "SERVER"));
 		if (recvPlayerInfo() != 0)
-		{
-			Menu::exitLines = {string(isServer ? "CLIENT " : "SERVER ") + "DISCONNECTED FROM THE GAME"};
-			return;
-		}
+			return finish(string(isServer ? "CLIENT " : "SERVER ") + "DISCONNECTED FROM THE GAME");
+
 		bool endGame = me.updateHealthAndFlags() || opponent.updateHealthAndFlags() || updateBullets();
 		if (isServer && updateAndSendSpawnables() != 0)
-		{
-			Menu::exitLines = {string("ERROR IN SENDING INFORMATION TO CLIENT")};
-			return;
-		}
+			return finish("ERROR IN SENDING INFORMATION TO CLIENT");
 		else if (!isServer && recvSpawnInfo() != 0)
-		{
-			Menu::exitLines = {"SERVER DISCONNECTED FROM THE GAME"};
-			return;
-		}
+			return finish("SERVER DISCONNECTED FROM THE GAME");
 
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
@@ -157,10 +140,7 @@ void Game::loopGame()
 		SDL_RenderPresent(renderer);
 
 		if (endGame)
-		{
-			finish();
-			return;
-		}
+			return finish();
 	}
 }
 
@@ -216,7 +196,7 @@ int Game::recvPlayerInfo()
 	if (info[4] == 1)
 	{
 		Bullet::bullets.insert(new Bullet(opponent.pos.x, opponent.pos.y, opponent.dir, bullet));
-		// @SOUND shoot sound
+		Sound::playChunk(Sound::shoot);
 	}
 	return 0;
 }
@@ -246,7 +226,7 @@ bool Game::updateBullets()
 		if (p == make_pair(me.pos.x, me.pos.y))
 		{
 			Bullet::bullets.erase(it++);
-			// @SOUND hit sound
+			Sound::playChunk(Sound::bulletHit);
 			if (--me.health <= 0)
 				return me.health = 0, true;
 			continue;
@@ -254,7 +234,7 @@ bool Game::updateBullets()
 		if (p == make_pair(opponent.pos.x, opponent.pos.y))
 		{
 			Bullet::bullets.erase(it++);
-			// @SOUND hit sound
+			Sound::playChunk(Sound::bulletHit);
 			if (--opponent.health <= 0)
 				return opponent.health = 0, true;
 			continue;
@@ -397,15 +377,17 @@ void Game::displayReloadTime()
 }
 
 // @TODO: enhance the messages
-void Game::finish()
+string Game::finish(string message)
 {
+	if (message != "")
+		return Sound::playChunk(Sound::lose), message;
 	// @SOUND on end (different on win/lose)
 	if (me.health == 0)
 	{
-		Menu::exitLines = {"THE GAME ENDED!, YOU LOST"};
+		return "THE GAME ENDED!, YOU LOST";
 	}
 	else
 	{
-		Menu::exitLines = {"THE GAME ENDED!, YOU WON"};
+		return "THE GAME ENDED!, YOU WON";
 	}
 }

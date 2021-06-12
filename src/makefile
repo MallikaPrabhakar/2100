@@ -34,10 +34,10 @@ networking.o: networking.cpp networking.hpp
 map.o: map.cpp map.hpp networking.o
 	g++ -c $(CFLAGS) map.cpp
 
-game.o: game.cpp game.hpp object.o map.o theme.o networking.o
+game.o: game.cpp game.hpp object.o theme.o map.o networking.o sound.o
 	g++ -c $(CFLAGS) game.cpp
 
-object.o: object.cpp object.hpp
+object.o: object.cpp object.hpp sound.o
 	g++ -c $(CFLAGS) object.cpp
 
 clean:

@@ -63,14 +63,14 @@ int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 	{
 		if (SDL_PollEvent(&e))
 			if (e.type == SDL_QUIT)
-				return -1;
+				return Sound::playChunk(Sound::correct), -1;
 			else if (e.type == SDL_KEYDOWN)
 				switch (e.key.keysym.sym)
 				{
 				case SDLK_ESCAPE:
-					return -1;
+					return Sound::playChunk(Sound::correct), -1;
 				default:
-					return 0;
+					return Sound::playChunk(Sound::correct), 0;
 				}
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, plotTexture, NULL, NULL);

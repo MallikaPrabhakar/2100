@@ -321,10 +321,6 @@ void Map::setMap(int mapNumber)
 	case 6:
 		generateRandomMaze();
 		break;
-
-	default:
-		throw(mapNumber);
-		break;
 	}
 }
 

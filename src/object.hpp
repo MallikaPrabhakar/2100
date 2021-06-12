@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <boost/container_hash/hash.hpp>
 #include <SDL.h>
+#include "sound.hpp"
 
 #define TILE_SIZE 36
 #define MAX_HEALTH 10

@@ -5,18 +5,17 @@
 #include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include "networking.hpp"
 #include "theme.hpp"
 #include "font.hpp"
-#include "map.hpp"
-#include "networking.hpp"
 #include "game.hpp"
 #include "intro.hpp"
+#include "sound.hpp"
 
 #define PREVIEW_SIZE 16
 
 using namespace std;
 
-// @SOUND on valid/invalid key press
 struct Menu
 {
 	enum modes
@@ -26,22 +25,23 @@ struct Menu
 		MAP,
 		CONNECT,
 		LOOK,
-		STORY, //plot
+		STORY,
 		RULES,
 		PLAY,
 		QUIT = -1
 	};
 
+	static modes mode;
 	static SDL_Renderer *renderer;
-	static vector<string> serverMenuLines, clientMenuLines, exitLines, lines;
+	static vector<string> serverMenuLines, clientMenuLines, lines;
 	static SDL_Texture *mapTexture;
 	static SDL_Rect mapRect;
 
-	static void displayLines(bool displayMap = false);
+	static void displayLines();
 	static int whichPlayer();
-	static void handleMenuKeyEvents(int &mode, int key = -1);
+	static void handleMenuKeyEvents(int key = -1);
 	static int menuLoop();
-	static int exitMenu(string target);
+	static int exitMenu(string target, string exitMessage = "");
 };
 
 #endif

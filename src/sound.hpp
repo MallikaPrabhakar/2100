@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <algorithm>
+#include <cassert>
 
 #define LOOP_SOUND "../assets/sounds/loop.wav"
 
@@ -26,10 +27,12 @@
 struct Sound
 {
 	static Mix_Music *loop;
-	static Mix_Chunk *start, *win, *lose, *correct, *incorrect, *spawnable, *spawn_flag, *shoot, *bomb, *flag, *health, *bullet;
+	static Mix_Chunk *start, *win, *lose, *correct, *incorrect, *spawnable, *spawn_flag, *shoot, *bombHit, *flagHit, *healthHit, *bulletHit;
 
 	static int initSounds();
 	static void playChunk(Mix_Chunk *chunk);
+	static void startMusic();
+	static void haltMusic();
 };
 
 #endif

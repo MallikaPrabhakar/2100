@@ -57,15 +57,16 @@ bool Player::updateHealthAndFlags()
 	{
 		Spawnable *spawnable = Spawnable::spawnables[Pos];
 		Spawnable::spawnables.erase(Pos);
-		// @SOUND collision sound x 3
 		if (spawnable->healthDelta == 0)
 		{
+			Sound::playChunk(Sound::flagHit);
 			--Spawnable::flagsOnMap, flags++;
 			if (flags == FLAG_LIMIT)
 				return true;
 		}
 		else
 		{
+			spawnable->healthDelta > 0 ? Sound::playChunk(Sound::healthHit) : Sound::playChunk(Sound::bombHit);
 			--Spawnable::healthsOnMap, health += spawnable->healthDelta;
 			if (health > MAX_HEALTH)
 				health = MAX_HEALTH;

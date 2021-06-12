@@ -19,14 +19,6 @@ int Game::renderInit()
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
 	genMapTexture(mapTexture);
 
-	vector<SDL_Texture *> tempVector = {mapTexture, tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
-	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
-			   { return texture == NULL; }))
-	{
-		Menu::exitLines = {"UNABLE TO LOAD MAP TEXTURES", "PLEASE CHECK THAT THE FOLDER STRUCTURE IS UNCHANGED"};
-		return -1;
-	}
-
 	me.health = opponent.health = MAX_HEALTH;
 	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
@@ -62,7 +54,7 @@ void Game::genMapTexture(SDL_Texture *texture, int size, int x, int y)
 	SDL_SetRenderTarget(renderer, NULL);
 }
 
-void Game::initTextures(SDL_Renderer *sourceRenderer)
+int Game::initTextures(SDL_Renderer *sourceRenderer)
 {
 	renderer = Object::renderer = sourceRenderer;
 	SDL_Surface *surface;
@@ -104,6 +96,12 @@ void Game::initTextures(SDL_Renderer *sourceRenderer)
 	//flag- for point calculation and winning rules
 	surface = IMG_Load((Theme::themeSource + "flag.tif").c_str());
 	flag = SDL_CreateTextureFromSurface(renderer, surface);
+
+	vector<SDL_Texture *> tempVector = {tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
+	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
+			   { return texture == NULL; }))
+		return -1;
+	return 0;
 }
 
 void Game::loopGame()

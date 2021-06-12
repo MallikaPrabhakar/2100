@@ -30,7 +30,7 @@ struct Game
 	static int reloadTime;
 
 	static int renderInit();
-	static void initTextures(SDL_Renderer *sourceRenderer);
+	static int initTextures(SDL_Renderer *sourceRenderer);
 	static void genMapTexture(SDL_Texture *texture, int size = TILE_SIZE, int x = 0, int y = 0);
 	static void loopGame();
 	static void handleKeyEvents(SDL_Keycode key);

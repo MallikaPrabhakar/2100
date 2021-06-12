@@ -191,6 +191,7 @@ int Menu::menuLoop()
 
 	lines = (Game::isServer ? serverMenuLines : clientMenuLines);
 	exitLines.clear();
+
 	while (true)
 	{
 		key = -1;

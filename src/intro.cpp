@@ -4,74 +4,60 @@ vector<string> Intro::story, Intro::firstPage, Intro::rules;
 SDL_Renderer *Intro::renderer;
 SDL_Texture *Intro::frontPageTexture, *Intro::plotTexture, *Intro::rulesTexture;
 
-//1 for first page and 2 for story
-void Intro::loadText()
+int fillVector(string fileName, vector<string> &toFillVector)
 {
-	fstream fileName;
-
-	//first page text (if any)
-	firstPage.clear();
-	fileName.open(FIRSTPAGEPATH, ios::in);
-	if (fileName.is_open())
+	fstream file;
+	file.open(fileName, ios::in);
+	if (file.is_open())
 	{
 		string line;
-		while (getline(fileName, line))
+		while (getline(file, line))
 		{
-			firstPage.push_back(line);
+			toFillVector.push_back(line);
 		}
-		fileName.close();
+		file.close();
+		return 0;
 	}
+	return -1;
+}
+
+int Intro::loadText()
+{
+	//first page text (if any)
+	if (fillVector(FIRSTPAGEPATH, firstPage) != 0)
+		return 1;
 
 	//plot text is loaded
-	story.clear();
-	fileName.open(STORYPATH, ios::in);
-	if (fileName.is_open())
-	{
-		string line;
-		while (getline(fileName, line))
-		{
-			story.push_back(line);
-		}
-		fileName.close();
-	}
+	if (fillVector(STORYPATH, story) != 0)
+		return 2;
 
 	//rules are loaded
-	rules.clear();
-	fileName.open(RULESPATH, ios::in);
-	if (fileName.is_open())
-	{
-		string line;
-		while (getline(fileName, line))
-		{
-			rules.push_back(line);
-		}
-		fileName.close();
-	}
+	if (fillVector(RULESPATH, rules) != 0)
+		return 3;
 
-	return;
+	return 0;
 }
 
 //Sets first page and the story background
-void Intro::loadMedia()
+int Intro::loadMedia()
 {
 	SDL_Surface *surface = IMG_Load("../assets/story/firstPage.png");
-	frontPageTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	if ((frontPageTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
+		return 1;
+
 	surface = IMG_Load("../assets/story/plot.png");
-	plotTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	if ((plotTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
+		return 2;
+
 	surface = IMG_Load("../assets/story/rules.png");
-	rulesTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	if ((rulesTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
+		return 3;
+
+	return 0;
 }
 
-void Intro::displayLines(vector<string> vec)
+int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 {
-	for (int i = 0; i < vec.size(); ++i)
-		if (!vec[i].empty())
-			Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
-}
-
-int Intro::displayPlot()
-{
-
 	SDL_Event e;
 	while (true)
 	{
@@ -88,66 +74,33 @@ int Intro::displayPlot()
 				}
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, plotTexture, NULL, NULL);
-		displayLines(story);
+		for (int i = 0; i < vec.size(); ++i)
+			if (!vec[i].empty())
+				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 		SDL_RenderPresent(renderer);
 	}
-	return 0;
+}
+
+int Intro::displayPlot()
+{
+	return displayPage(plotTexture, story);
 }
 
 int Intro::displayRules()
 {
-
-	SDL_Event e;
-	while (true)
-	{
-		if (SDL_PollEvent(&e))
-			if (e.type == SDL_QUIT)
-				return -1;
-			else if (e.type == SDL_KEYDOWN)
-				switch (e.key.keysym.sym)
-				{
-				case SDLK_ESCAPE:
-					return -1;
-				default:
-					return 0;
-				}
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, rulesTexture, NULL, NULL);
-		displayLines(rules);
-		SDL_RenderPresent(renderer);
-	}
-
-	return 0;
+	return displayPage(rulesTexture, rules);
 }
 
 int Intro::displayStartingPage()
 {
-
-	SDL_Event e;
-	while (true)
-	{
-
-		if (SDL_PollEvent(&e))
-			if (e.type == SDL_QUIT)
-				return -1;
-			else if (e.type == SDL_KEYDOWN)
-				switch (e.key.keysym.sym)
-				{
-				case SDLK_ESCAPE:
-					return -1;
-				default:
-					return 0;
-				}
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, frontPageTexture, NULL, NULL);
-		displayLines(firstPage);
-		SDL_RenderPresent(renderer);
-	}
+	return displayPage(frontPageTexture, firstPage);
 }
 
-void Intro::initIntro(SDL_Renderer *srcRender)
+int Intro::initIntro(SDL_Renderer *srcRender)
 {
 	renderer = srcRender;
-	loadText();
-	loadMedia();
+	int ret = loadText();
+	if (ret != 0)
+		return ret;
+	return loadMedia();
 }

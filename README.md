@@ -7,6 +7,7 @@ Sources referred/used:
 1. [SDL and code structure idea](https://github.com/maciejspychala/sdl-game)
 1. [Socket programming](https://www.linuxhowtos.org/C_C++/socket.htm)
 1. [Random maze generator](https://github.com/keesiemeijer/maze-generator)
+1. [Sound](https://freesound.org/)
 
 Resources:
 https://pixabay.com/illustrations/paper-stationery-parchment-old-68833/

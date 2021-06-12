@@ -1,12 +1,13 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "font.hpp"
+#include "sound.hpp"
 #include "theme.hpp"
-#include "networking.hpp"
+#include "intro.hpp"
 #include "menu.hpp"
+#include "networking.hpp"
 #include "map.hpp"
 #include "game.hpp"
-#include "intro.hpp"
 
 //TODO: make theme 1 light and theme 2 dark because default should be white 
 
@@ -23,6 +24,8 @@ void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 int main()
 {
 	srand(time(NULL));
+
+	// init window
 	SDL_Window *window = SDL_CreateWindow("Capture the Flag!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
@@ -32,6 +35,7 @@ int main()
 	SDL_Surface *iconSurface = IMG_Load("../assets/themes/tif_files/bomb.tif");
 	SDL_SetWindowIcon(window, iconSurface);
 
+	// init renderer
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (renderer == NULL)
 	{
@@ -42,6 +46,7 @@ int main()
 	}
 	SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	// init fonts
 	int fonts = Fonts::initFonts();
 	if (fonts != 0)
 	{
@@ -51,11 +56,40 @@ int main()
 		return 1;
 	}
 
+	// init sounds
+	if (Sound::initSounds() != 0)
+	{
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		printf("Could not load sounds, error encountered: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	// init theme
 	Theme::setTheme(1, renderer);
+
+	// init intro
+	if (Intro::initIntro(renderer) != 0)
+	{
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		printf("Could not initialise loading screen, error encountered: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	// @TODO: better init menu stuff?
 	Menu::renderer = renderer;
-	// @SOUND play some calming/apocalyptic mild sound for the entire game
-	Intro::initIntro(renderer);
-	//for starting page
+
+	// init game textures
+	if (Game::initTextures(renderer) != 0)
+	{
+		SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+		printf("Could not initialise game textures, error encountered: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	// display intro page
 	while (true)
 	{
 		if (Intro::displayStartingPage() == 0)
@@ -65,7 +99,8 @@ int main()
 		if (Menu::exitMenu("START SCREEN") == -1)
 			handleExit(renderer, window);
 	}
-	//for plot
+
+	// display story
 	while (true)
 	{
 		if (Intro::displayPlot() == 0)
@@ -76,7 +111,7 @@ int main()
 			handleExit(renderer, window);
 	}
 
-	//for rules
+	// display rules
 	while (true)
 	{
 		if (Intro::displayRules() == 0)
@@ -87,7 +122,7 @@ int main()
 			handleExit(renderer, window);
 	}
 
-	//for choosing player
+	// choose player (1 or 2)
 	while (true)
 	{
 		int player = Menu::whichPlayer();
@@ -112,7 +147,7 @@ int main()
 		break;
 	}
 
-	Game::initTextures(renderer);
+	// menu + game + exit loop
 	while (true)
 	{
 		if (Menu::menuLoop() == 0)

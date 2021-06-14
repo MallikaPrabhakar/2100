@@ -10,6 +10,8 @@
 #include "map.hpp"
 #include "game.hpp"
 
+#define ICON "../assets/res/icon.tif"
+
 using namespace std;
 
 //TODO: make theme 1 light and theme 2 dark because default should be white
@@ -33,13 +35,13 @@ int main()
 
 	// init window
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	SDL_Window *window = SDL_CreateWindow("Capture the Flag!", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
+	SDL_Window *window = SDL_CreateWindow("2100", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
 	if (window == NULL)
 	{
 		printf("Could not create window, error encountered: %s\n", SDL_GetError());
 		return 1;
 	}
-	SDL_Surface *iconSurface = IMG_Load("../assets/themes/tif_files/bomb.tif");
+	SDL_Surface *iconSurface = IMG_Load(ICON);
 	SDL_SetWindowIcon(window, iconSurface);
 
 	// init renderer

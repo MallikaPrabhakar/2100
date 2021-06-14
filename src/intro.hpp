@@ -10,9 +10,14 @@
 #include "font.hpp"
 #include "game.hpp"
 
-#define STORYPATH "../assets/story/story.txt"
-#define FIRSTPAGEPATH "../assets/story/firstPage.txt"
-#define RULESPATH "../assets/story/rules.txt"
+#define FIRSTPAGE "../assets/res/firstPage.png"
+#define FIRSTPAGEPATH "../assets/res/firstPage.txt"
+
+#define PLOTIMG "../assets/res/plot.png"
+#define STORYPATH "../assets/res/story.txt"
+
+#define RULESIMG "../assets/res/rules.png"
+#define RULESPATH "../assets/res/rules.txt"
 
 using namespace std;
 

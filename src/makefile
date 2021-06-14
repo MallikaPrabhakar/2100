@@ -41,6 +41,6 @@ object.o: object.cpp object.hpp sound.o
 	g++ -c $(CFLAGS) object.cpp
 
 clean:
-	rm -f $(objects)
+	rm -f $(objects) game
 
 reinstall: clean install

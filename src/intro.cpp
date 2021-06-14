@@ -41,15 +41,15 @@ int Intro::loadText()
 //Sets first page and the story background
 int Intro::loadMedia()
 {
-	SDL_Surface *surface = IMG_Load("../assets/story/firstPage.png");
+	SDL_Surface *surface = IMG_Load(FIRSTPAGE);
 	if ((frontPageTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
 		return 1;
 
-	surface = IMG_Load("../assets/story/plot.png");
+	surface = IMG_Load(PLOTIMG);
 	if ((plotTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
 		return 2;
 
-	surface = IMG_Load("../assets/story/rules.png");
+	surface = IMG_Load(RULESIMG);
 	if ((rulesTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
 		return 3;
 

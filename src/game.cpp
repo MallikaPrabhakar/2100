@@ -370,10 +370,10 @@ string Game::finish(string message)
 	if (message != "")
 		return Sound::playChunk(Sound::lose), message;
 	if (me.health == 0)
-		return Sound::playChunk(Sound::lose), "YOU WERE KILLED AND YOU LOST :(";
+		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOU WERE KILLED AND YOU LOST :(";
 	if (opponent.flags == FLAG_LIMIT)
-		return Sound::playChunk(Sound::lose), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES BEFORE YOU AND YOU LOST :(";
+		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES BEFORE YOU AND YOU LOST :(";
 	if (me.flags == FLAG_LIMIT)
-		return Sound::playChunk(Sound::win), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES FIRST! YOU WIN :D";
-	return Sound::playChunk(Sound::win), "YOU KILLED YOUR OPPONENT! YOU WIN :D";
+		return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES FIRST! YOU WIN :D";
+	return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU KILLED YOUR OPPONENT! YOU WIN :D";
 }

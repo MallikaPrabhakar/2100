@@ -1,10 +1,10 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <vector>
-#include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <vector>
+#include <string>
 #include "networking.hpp"
 #include "theme.hpp"
 #include "font.hpp"

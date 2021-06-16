@@ -1,7 +1,7 @@
 #include "theme.hpp"
 
 SDL_Color Theme::textColor, Theme::backgroundColor;
-string Theme::themeSource;
+std::string Theme::themeSource;
 
 void Theme::setTheme(int themeNumber, SDL_Renderer *renderer)
 {

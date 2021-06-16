@@ -4,8 +4,6 @@
 #include <SDL.h>
 #include <string>
 
-using namespace std;
-
 #define THEMECOUNT 3
 
 #define THEME1_FONT {48, 25, 52}
@@ -24,7 +22,7 @@ class Theme
 {
 public:
 	static SDL_Color textColor, backgroundColor;
-	static string themeSource;
+	static std::string themeSource;
 
 	static void setTheme(int themeNumber, SDL_Renderer *renderer);
 };

@@ -73,7 +73,7 @@ int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 					return Sound::playChunk(Sound::correct), 0;
 				}
 		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, plotTexture, NULL, NULL);
+		SDL_RenderCopy(renderer, texture, NULL, NULL);
 		for (int i = 0; i < vec.size(); ++i)
 			if (!vec[i].empty())
 				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);

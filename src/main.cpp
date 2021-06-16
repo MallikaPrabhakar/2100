@@ -103,9 +103,7 @@ int main()
 	while (true)
 	{
 		if (Intro::displayStartingPage() == 0)
-		{
 			break;
-		}
 		if (Menu::exitMenu("START SCREEN") == -1)
 			handleExit(renderer, window);
 	}
@@ -114,9 +112,7 @@ int main()
 	while (true)
 	{
 		if (Intro::displayPlot() == 0)
-		{
 			break;
-		}
 		if (Menu::exitMenu("STORY") == -1)
 			handleExit(renderer, window);
 	}
@@ -125,9 +121,7 @@ int main()
 	while (true)
 	{
 		if (Intro::displayRules() == 0)
-		{
 			break;
-		}
 		if (Menu::exitMenu("RULES") == -1)
 			handleExit(renderer, window);
 	}

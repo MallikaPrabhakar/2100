@@ -1,10 +1,10 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <SDL.h>
 #include <unordered_set>
 #include <unordered_map>
 #include <boost/container_hash/hash.hpp>
-#include <SDL.h>
 #include "sound.hpp"
 
 #define TILE_SIZE 36
@@ -44,11 +44,16 @@ struct Bullet : Object
 
 struct Player : Object
 {
+	static SDL_Texture *hit;
+
+	SDL_Texture *player;
 	int health, flags;
+	bool isHit;
 
 	Player(int dir);
 
 	bool updateHealthAndFlags();
+	void renderObject();
 };
 
 struct Spawnable : Object

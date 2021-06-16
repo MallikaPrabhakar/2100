@@ -10,8 +10,6 @@
 #define FONT_MEDIUM "../assets/fonts/Roboto-Medium.ttf"
 #define FONT_BOLD "../assets/fonts/Roboto-Bold.ttf"
 
-using namespace std;
-
 struct Fonts
 {
 	static TTF_Font *fonts[];

@@ -1,13 +1,14 @@
 #ifndef INTRO_H
 #define INTRO_H
 
-#include <vector>
-#include <string>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <vector>
+#include <string>
 #include <fstream>
 #include "font.hpp"
+#include "sound.hpp"
 #include "game.hpp"
 
 #define FIRSTPAGE "../assets/res/firstPage.png"
@@ -30,8 +31,7 @@ struct Intro
 	static vector<string> story, firstPage, rules;
 
 	static int displayPlot();
-	//DIslpay plot: story dispplay: scroll!
-	static int displayStartingPage(); //?
+	static int displayStartingPage();
 	static int displayRules();
 	static int displayPage(SDL_Texture *texture, vector<string> &vec);
 	static int loadMedia();

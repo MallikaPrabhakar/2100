@@ -1,6 +1,7 @@
 #include "object.hpp"
 
 SDL_Renderer *Object::renderer;
+SDL_Texture *Player::hit;
 unordered_set<Bullet *> Bullet::bullets;
 int Spawnable::healthsOnMap, Spawnable::flagsOnMap;
 unordered_map<pair<int, int>, Spawnable *> Spawnable::spawnables;
@@ -14,6 +15,7 @@ Object::Object(int dir, SDL_Texture *texture)
 Player::Player(int dir) : Object(dir, NULL)
 {
 	pos.w = pos.h = TILE_SIZE;
+	isHit = 0;
 	flags = 0;
 	health = MAX_HEALTH;
 }
@@ -75,6 +77,16 @@ bool Player::updateHealthAndFlags()
 		}
 	}
 	return false;
+}
+
+void Player::renderObject()
+{
+	if (isHit)
+		texture = hit;
+	else
+		texture = player;
+	Object::renderObject();
+	isHit = 0;
 }
 
 void Bullet::displayBullets()

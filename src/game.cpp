@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag, *Game::home1, *Game::home2;
+SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
@@ -39,14 +39,10 @@ void Game::genMapTexture(SDL_Texture *texture, int size, int x, int y)
 		{
 			rect.x = size * i;
 			rect.y = size * j;
-			if (i == 1 && j == 1)
-				SDL_RenderCopy(renderer, home1, NULL, &rect);
-			else if (i == 23 && j == 23)
-				SDL_RenderCopy(renderer, home2, NULL, &rect);
-			else if (Map::map[i][j] == 0)
-				SDL_RenderCopy(renderer, tile, NULL, &rect);
-			else if (Map::map[i][j] == 1)
+			if (Map::map[i][j])
 				SDL_RenderCopy(renderer, wall, NULL, &rect);
+			else
+				SDL_RenderCopy(renderer, tile, NULL, &rect);
 		}
 	SDL_SetRenderTarget(renderer, NULL);
 }
@@ -62,17 +58,14 @@ int Game::initTextures(SDL_Renderer *sourceRenderer)
 
 	//player1 (me is player 1)
 	surface = IMG_Load((Theme::themeSource + "player1.tif").c_str());
-	me.texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-	surface = IMG_Load((Theme::themeSource + "home1.tif").c_str());
-	home1 = SDL_CreateTextureFromSurface(renderer, surface);
+	me.player = SDL_CreateTextureFromSurface(renderer, surface);
 
 	//player 2 (opponent is player 2)
 	surface = IMG_Load((Theme::themeSource + "player2.tif").c_str());
-	opponent.texture = SDL_CreateTextureFromSurface(renderer, surface);
+	opponent.player = SDL_CreateTextureFromSurface(renderer, surface);
 
-	surface = IMG_Load((Theme::themeSource + "home2.tif").c_str());
-	home2 = SDL_CreateTextureFromSurface(renderer, surface);
+	surface = IMG_Load((Theme::themeSource + "player_hit.tif").c_str());
+	Player::hit = SDL_CreateTextureFromSurface(renderer, surface);
 
 	//wall- barrier
 	surface = IMG_Load((Theme::themeSource + "wall.tif").c_str());
@@ -94,7 +87,7 @@ int Game::initTextures(SDL_Renderer *sourceRenderer)
 	surface = IMG_Load((Theme::themeSource + "flag.tif").c_str());
 	flag = SDL_CreateTextureFromSurface(renderer, surface);
 
-	vector<SDL_Texture *> tempVector = {tile, wall, bullet, bomb, health, flag, home1, home2, me.texture, opponent.texture};
+	vector<SDL_Texture *> tempVector = {tile, wall, bullet, bomb, health, flag, me.player, opponent.player, Player::hit};
 	if (any_of(tempVector.begin(), tempVector.end(), [](SDL_Texture *texture)
 			   { return texture == NULL; }))
 		return -1;
@@ -225,6 +218,7 @@ bool Game::updateBullets()
 		}
 		if (p == make_pair(me.pos.x, me.pos.y))
 		{
+			me.isHit = 1;
 			Bullet::bullets.erase(it++);
 			Sound::playChunk(Sound::bulletHit);
 			if (--me.health <= 0)
@@ -233,6 +227,7 @@ bool Game::updateBullets()
 		}
 		if (p == make_pair(opponent.pos.x, opponent.pos.y))
 		{
+			opponent.isHit = 1;
 			Bullet::bullets.erase(it++);
 			Sound::playChunk(Sound::bulletHit);
 			if (--opponent.health <= 0)
@@ -246,7 +241,6 @@ bool Game::updateBullets()
 
 int Game::updateAndSendSpawnables()
 {
-	srand(time(NULL));
 	pair<int, int> Pos = {-1, -1};
 	int type = 0;
 	if (Spawnable::flagsOnMap == 0 && rand() * 1.0 / RAND_MAX < SPAWN_PROB)
@@ -299,14 +293,13 @@ int Game::recvSpawnInfo()
 void Game::displayHealthBars()
 {
 	SDL_Rect healthRect = {OFFSET, WINDOW_WIDTH + OFFSET / 2, OFFSET, OFFSET};
-	SDL_Color oldColor, healthColor = {250, 0, 0, 0};
-	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	SDL_Color healthColor = {255, 0, 0, 0};
 	for (int i = 0; i < me.health; ++i)
 	{
 		SDL_SetRenderDrawColor(renderer, healthColor.r, healthColor.g, healthColor.b, healthColor.a);
 		SDL_RenderFillRect(renderer, &healthRect);
-		healthColor.r -= 25;
-		healthColor.g += 25;
+		healthColor.r -= 255 / MAX_HEALTH;
+		healthColor.g += 255 / MAX_HEALTH;
 		healthRect.x += healthRect.w;
 	}
 	healthColor = {250, 0, 0, 0};
@@ -316,25 +309,23 @@ void Game::displayHealthBars()
 	{
 		SDL_SetRenderDrawColor(renderer, healthColor.r, healthColor.g, healthColor.b, healthColor.a);
 		SDL_RenderFillRect(renderer, &healthRect);
-		healthColor.r -= 25;
-		healthColor.g += 25;
+		healthColor.r -= 255 / MAX_HEALTH;
+		healthColor.g += 255 / MAX_HEALTH;
 		healthRect.x += healthRect.w;
 	}
-	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::textColor.r, Theme::textColor.g, Theme::textColor.b, Theme::textColor.a);
 	healthRect.x = OFFSET;
 	healthRect.w = MAX_HEALTH * OFFSET;
 	SDL_RenderDrawRect(renderer, &healthRect);
 	healthRect.x = WINDOW_WIDTH - OFFSET;
 	healthRect.w = -healthRect.w;
 	SDL_RenderDrawRect(renderer, &healthRect);
-	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
 void Game::displayFlagsCount()
 {
-	SDL_Color oldColor;
-	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
-	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::textColor.r, Theme::textColor.g, Theme::textColor.b, Theme::textColor.a);
 	SDL_Rect flagRect = {OFFSET, WINDOW_WIDTH + 2 * OFFSET, OFFSET, OFFSET};
 	for (int i = 0; i < me.flags; ++i)
 	{
@@ -359,35 +350,30 @@ void Game::displayFlagsCount()
 		SDL_RenderDrawRect(renderer, &flagRect);
 		flagRect.x -= flagRect.w;
 	}
-	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
 void Game::displayReloadTime()
 {
-	SDL_Color oldColor;
-	SDL_GetRenderDrawColor(renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
-	SDL_SetRenderDrawColor(renderer, 255 - oldColor.r, 255 - oldColor.g, 255 - oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::textColor.r, Theme::textColor.g, Theme::textColor.b, Theme::textColor.a);
 	SDL_Rect reloadRect = {OFFSET, WINDOW_WIDTH + 7 * OFFSET / 2, (WINDOW_WIDTH - 2 * OFFSET) / RELOAD, OFFSET};
 	for (int i = 0; i < RELOAD - reloadTime; ++i)
 	{
 		SDL_RenderCopyEx(renderer, bullet, NULL, &reloadRect, 90, NULL, SDL_FLIP_NONE);
 		reloadRect.x += reloadRect.w;
 	}
-	SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
-// @TODO: enhance the messages
 string Game::finish(string message)
 {
 	if (message != "")
 		return Sound::playChunk(Sound::lose), message;
-	// @SOUND on end (different on win/lose)
 	if (me.health == 0)
-	{
-		return "THE GAME ENDED!, YOU LOST";
-	}
-	else
-	{
-		return "THE GAME ENDED!, YOU WON";
-	}
+		return Sound::playChunk(Sound::lose), "YOU WERE KILLED AND YOU LOST :(";
+	if (opponent.flags == FLAG_LIMIT)
+		return Sound::playChunk(Sound::lose), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES BEFORE YOU AND YOU LOST :(";
+	if (me.flags == FLAG_LIMIT)
+		return Sound::playChunk(Sound::win), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES FIRST! YOU WIN :D";
+	return Sound::playChunk(Sound::win), "YOU KILLED YOUR OPPONENT! YOU WIN :D";
 }

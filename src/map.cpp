@@ -341,6 +341,8 @@ void Map::generateRandomMaze()
 				col1[2 * j] = col1[2 * j + 1] = col1[2 * j + 2] = 1;
 			if (walls[i][j][2])
 				col1[2 * j + 2] = col2[2 * j + 2] = 1;
+			if (i > 0 && walls[i - 1][j][2])
+				col1[2 * j + 2] = 1;
 		}
 		map[2 * i] = col1;
 		map[2 * i + 1] = col2;
@@ -431,19 +433,9 @@ void Map::removeWalls(vector<vector<array<bool, 4>>> &walls)
 void Map::setBasicMap()
 {
 	map.assign(MAP_SIZE, vector<bool>(MAP_SIZE, 0));
-	//boundary wall creation
+	map[0] = map[MAP_SIZE - 1] = vector<bool>(MAP_SIZE, 1);
 	for (int i = 0; i < MAP_SIZE; i++)
-	{
-		if (i == 0 || i == 24)
-		{
-			map[i] = vector<bool>(MAP_SIZE, 1);
-		}
-		else
-		{
-			map[i][0] = 1;
-			map[i][24] = 1;
-		}
-	}
+		map[i][0] = map[i][MAP_SIZE - 1] = 1;
 }
 
 int Map::sendMap()

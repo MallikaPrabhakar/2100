@@ -21,7 +21,7 @@ struct Map
 	static void generateRandomMaze();
 	static vector<vector<array<bool, 4>>> generateRandomWalls();
 	static void removeWalls(vector<vector<array<bool, 4>>> &walls);
-	static void setBasicMap(); // sets the basic map boundaries and home bases
+	static void setBasicMap();
 	static int sendMap();
 	static int recvMap();
 };

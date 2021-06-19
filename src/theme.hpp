@@ -16,7 +16,7 @@
 
 #define THEME3_FONT {255, 229, 180}
 #define THEME3_BACKGROUND {42, 13, 93}
-#define THEME3 "../assets/themes/theme2/"
+#define THEME3 "../assets/themes/theme3/"
 
 class Theme
 {

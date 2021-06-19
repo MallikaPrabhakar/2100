@@ -47,8 +47,7 @@ struct Player : Object
 	static SDL_Texture *hit;
 
 	SDL_Texture *player;
-	int health, flags;
-	bool isHit;
+	int health, flags, isHit;
 
 	Player(int dir);
 

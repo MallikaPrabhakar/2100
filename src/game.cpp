@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-SDL_Texture *Game::backgroundTexture, *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
+SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
@@ -15,8 +15,6 @@ int Game::renderInit()
 	mapRect = SDL_Rect({0, 0, WINDOW_WIDTH, WINDOW_WIDTH});
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
 	genMapTexture(mapTexture);
-
-	backgroundTexture = Theme::backgroundTexture;
 
 	me.health = opponent.health = MAX_HEALTH;
 	me.flags = opponent.flags = 0;
@@ -125,6 +123,7 @@ string Game::loopGame()
 			return finish("SERVER DISCONNECTED FROM THE GAME");
 
 		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, Theme::backgroundTexture, NULL, NULL);
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
 		Spawnable::displaySpawnables();
 		opponent.renderObject();
@@ -221,7 +220,7 @@ bool Game::updateBullets()
 		}
 		if (p == make_pair(me.pos.x, me.pos.y))
 		{
-			me.isHit = 1;
+			me.isHit = HIT_FLASH;
 			Bullet::bullets.erase(it++);
 			Sound::playChunk(Sound::bulletHit);
 			if (--me.health <= 0)
@@ -230,7 +229,7 @@ bool Game::updateBullets()
 		}
 		if (p == make_pair(opponent.pos.x, opponent.pos.y))
 		{
-			opponent.isHit = 1;
+			opponent.isHit = HIT_FLASH;
 			Bullet::bullets.erase(it++);
 			Sound::playChunk(Sound::bulletHit);
 			if (--opponent.health <= 0)
@@ -275,7 +274,6 @@ pair<int, int> Game::spawnObject(int healthDelta)
 			++Spawnable::healthsOnMap;
 		else
 			++Spawnable::flagsOnMap;
-		// @SOUND spawn sound here
 		return Pos;
 	}
 }
@@ -289,7 +287,6 @@ int Game::recvSpawnInfo()
 		return info[0] + 1;
 	pair<int, int> Pos = {info[1] * TILE_SIZE, info[2] * TILE_SIZE};
 	Spawnable::spawnables[Pos] = new Spawnable(Pos.first, Pos.second, info[3] * 2, info[3] == 0 ? flag : (info[3] > 0 ? health : bomb));
-	// @SOUND spawn sound here
 	return 0;
 }
 
@@ -323,7 +320,6 @@ void Game::displayHealthBars()
 	healthRect.x = WINDOW_WIDTH - OFFSET;
 	healthRect.w = -healthRect.w;
 	SDL_RenderDrawRect(renderer, &healthRect);
-	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
 void Game::displayFlagsCount()
@@ -353,7 +349,6 @@ void Game::displayFlagsCount()
 		SDL_RenderDrawRect(renderer, &flagRect);
 		flagRect.x -= flagRect.w;
 	}
-	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
 void Game::displayReloadTime()
@@ -365,7 +360,6 @@ void Game::displayReloadTime()
 		SDL_RenderCopyEx(renderer, bullet, NULL, &reloadRect, 90, NULL, SDL_FLIP_NONE);
 		reloadRect.x += reloadRect.w;
 	}
-	SDL_SetRenderDrawColor(renderer, Theme::backgroundColor.r, Theme::backgroundColor.g, Theme::backgroundColor.b, Theme::backgroundColor.a);
 }
 
 string Game::finish(string message)

@@ -2,14 +2,14 @@
 
 vector<string> Menu::serverMenuLines = {"[T]HEME", "[M]AP", "[C]ONNECT WITH CLIENT", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::clientMenuLines = {"[T]HEME", "[C]ONNECT TO SERVER", "[P]LAY", "[S]TORY", "[R]ULES"}, Menu::lines;
 SDL_Renderer *Menu::renderer;
-SDL_Texture *Menu::mapTexture, *Menu::backgroundTexture;
+SDL_Texture *Menu::mapTexture;
 SDL_Rect Menu::mapRect = {(WINDOW_WIDTH - PREVIEW_SIZE * MAP_SIZE) / 2, WINDOW_HEIGHT - (PREVIEW_SIZE * MAP_SIZE + OFFSET), (PREVIEW_SIZE * MAP_SIZE), (PREVIEW_SIZE * MAP_SIZE)};
 Menu::modes Menu::mode;
 
 void Menu::displayLines()
 {
 	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+	SDL_RenderCopy(renderer, Theme::backgroundTexture, NULL, NULL);
 	for (int i = 0; i < lines.size(); ++i)
 		if (!lines[i].empty())
 			Fonts::displayText(renderer, lines[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
@@ -20,7 +20,6 @@ void Menu::displayLines()
 
 int Menu::whichPlayer()
 {
-	backgroundTexture = Theme::backgroundTexture;
 	lines = {"PLAYER [1] OR PLAYER [2]?", "[Q]UIT"};
 	SDL_Event e;
 	while (true)
@@ -116,7 +115,6 @@ void Menu::handleMenuKeyEvents(int key)
 			Sound::playChunk(Sound::correct);
 			Theme::setTheme(key - SDLK_0, renderer);
 			Game::initTextures(renderer);
-			backgroundTexture = Theme::backgroundTexture;
 		}
 		else if (key == SDLK_KP_ENTER || key == SDLK_RETURN)
 		{
@@ -224,7 +222,6 @@ int Menu::menuLoop()
 	mode = MAIN_MENU;
 	Network::done = false;
 
-	backgroundTexture = Theme::backgroundTexture;
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, PREVIEW_SIZE * MAP_SIZE, PREVIEW_SIZE * MAP_SIZE);
 
 	if (Game::isServer)
@@ -260,7 +257,6 @@ int Menu::menuLoop()
 
 int Menu::exitMenu(string target, string exitMessage)
 {
-	backgroundTexture = Theme::backgroundTexture;
 	lines = {exitMessage};
 	lines.push_back("[G]O BACK TO " + target);
 	lines.push_back("[Q]UIT");

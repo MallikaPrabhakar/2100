@@ -32,11 +32,11 @@
 
 #define THEME3_FONT   \
 	{                 \
-		255, 229, 180 \
+		255, 216, 177 \
 	}
 #define THEME3_ANTIFONT \
 	{                   \
-		48, 25, 52      \
+		42, 13, 93      \
 	}
 #define THEME3_BACKGROUND "../assets/themes/theme3/background.tif"
 #define THEME3 "../assets/themes/theme3/"
@@ -44,10 +44,8 @@
 class Theme
 {
 public:
-	static SDL_Color textColor, backgroundColor;
+	static SDL_Color textColor;
 	static std::string themeSource;
-	static SDL_Surface *surface;
-	static SDL_Renderer *renderer;
 	static SDL_Texture *backgroundTexture;
 
 	static void setTheme(int themeNumber, SDL_Renderer *renderer); //sets the background texture

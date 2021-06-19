@@ -15,8 +15,7 @@ Object::Object(int dir, SDL_Texture *texture)
 Player::Player(int dir) : Object(dir, NULL)
 {
 	pos.w = pos.h = TILE_SIZE;
-	isHit = 0;
-	flags = 0;
+	isHit = flags = 0;
 	health = MAX_HEALTH;
 }
 
@@ -82,11 +81,10 @@ bool Player::updateHealthAndFlags()
 void Player::renderObject()
 {
 	if (isHit)
-		texture = hit;
+		texture = hit, --isHit;
 	else
 		texture = player;
 	Object::renderObject();
-	isHit = 0;
 }
 
 void Bullet::displayBullets()

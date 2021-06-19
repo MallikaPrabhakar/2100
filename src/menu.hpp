@@ -34,7 +34,7 @@ struct Menu
 	static modes mode;
 	static SDL_Renderer *renderer;
 	static vector<string> serverMenuLines, clientMenuLines, lines;
-	static SDL_Texture *mapTexture, *backgroundTexture;
+	static SDL_Texture *mapTexture;
 	static SDL_Rect mapRect;
 
 	static void displayLines();

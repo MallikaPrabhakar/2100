@@ -23,22 +23,18 @@ int fillVector(string fileName, vector<string> &toFillVector)
 
 int Intro::loadText()
 {
-	//first page text (if any)
-	if (fillVector(FIRSTPAGEPATH, firstPage) != 0)
-		return 1;
-
-	//plot text is loaded
+	// plot text is loaded
 	if (fillVector(STORYPATH, story) != 0)
 		return 2;
 
-	//rules are loaded
+	// rules are loaded
 	if (fillVector(RULESPATH, rules) != 0)
 		return 3;
 
 	return 0;
 }
 
-//Sets first page and the story background
+// sets first page and the story background
 int Intro::loadMedia()
 {
 	SDL_Surface *surface = IMG_Load(FIRSTPAGE);

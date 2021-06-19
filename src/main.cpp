@@ -14,8 +14,6 @@
 
 using namespace std;
 
-//TODO: make theme 1 light and theme 2 dark because default should be white
-
 void handleExit(SDL_Renderer *renderer, SDL_Window *window)
 {
 	close(Network::othersockfd);

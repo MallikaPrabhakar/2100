@@ -15,6 +15,7 @@
 #define OFFSET 25
 #define MSG_SIZE 5
 #define RELOAD 50
+#define HIT_FLASH 5
 #define MAX_SPAWN 5
 #define SPAWN_PROB 0.4
 
@@ -22,7 +23,7 @@ using namespace std;
 
 struct Game
 {
-	static SDL_Texture *backgroundTexture, *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
+	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
 	static SDL_Renderer *renderer;
 	static SDL_Rect mapRect;
 	static bool isServer;

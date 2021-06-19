@@ -12,7 +12,7 @@ void Menu::displayLines()
 	SDL_RenderCopy(renderer, Theme::backgroundTexture, NULL, NULL);
 	for (int i = 0; i < lines.size(); ++i)
 		if (!lines[i].empty())
-			Fonts::displayText(renderer, lines[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
+			Fonts::displayText(renderer, lines[i].c_str(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 	if (mode == MAP)
 		SDL_RenderCopy(renderer, mapTexture, NULL, &mapRect);
 	SDL_RenderPresent(renderer);

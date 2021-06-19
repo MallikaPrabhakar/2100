@@ -24,10 +24,16 @@ int fillVector(string fileName, vector<string> &toFillVector)
 int Intro::loadText()
 {
 	// plot text is loaded
+	story.clear();
+	for (int i = 0; i < FONTSCOUNT - 1; ++i)
+		story.push_back("");
 	if (fillVector(STORYPATH, story) != 0)
 		return 2;
+	for (int i = 0; i < FONTSCOUNT - 1; ++i)
+		story.push_back("");
 
 	// rules are loaded
+	rules.clear();
 	if (fillVector(RULESPATH, rules) != 0)
 		return 3;
 
@@ -54,6 +60,7 @@ int Intro::loadMedia()
 int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 {
 	SDL_Event e;
+	int index = 0;
 	while (true)
 	{
 		if (SDL_PollEvent(&e))
@@ -69,17 +76,27 @@ int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 				}
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
-		if (vec==story){
-			for (int i = 0; i < vec.size(); ++i)
-			if (!vec[i].empty())
-				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i, {205,225,225});
-		} else {
-		for (int i = 0; i < vec.size(); ++i)
-			if (!vec[i].empty())
-				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
+		if (texture == plotTexture)
+		{
+			if (!crawlText(index++ / WAIT, vec))
+				return Sound::playChunk(Sound::correct), 0;
 		}
+		else
+			for (int i = 0; i < vec.size(); ++i)
+				if (!vec[i].empty())
+					Fonts::displayText(renderer, vec[i].c_str(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
 		SDL_RenderPresent(renderer);
 	}
+}
+
+bool Intro::crawlText(int index, vector<string> &lines)
+{
+	if (index > (int)lines.size() - FONTSCOUNT)
+		return false;
+	for (int i = 0; i < FONTSCOUNT; ++i)
+		if (!lines[i + index].empty())
+			Fonts::displayText(renderer, lines[i + index].c_str(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i, i, THEME1_FONT);
+	return true;
 }
 
 int Intro::displayPlot()

@@ -14,10 +14,12 @@
 
 #define FIRSTPAGE "../assets/res/firstPage.png"
 
-#define PLOTIMG "../assets/res/plot.png"
+#define PLOTIMG "../assets/res/plot.jpeg"
 #define STORYPATH "../assets/res/story.txt"
 
 #define RULESPATH "../assets/res/rules.txt"
+
+#define WAIT 75
 
 using namespace std;
 
@@ -33,6 +35,7 @@ struct Intro
 	static int displayStartingPage();
 	static int displayRules();
 	static int displayPage(SDL_Texture *texture, vector<string> &vec);
+	static bool crawlText(int index, vector<string> &lines);
 	static int loadMedia();
 	static int loadText();
 	static int initIntro(SDL_Renderer *srcRenderer);

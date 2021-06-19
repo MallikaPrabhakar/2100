@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-SDL_Texture *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
+SDL_Texture *Game::backgroundTexture, *Game::mapTexture, *Game::tile, *Game::wall, *Game::bullet, *Game::bomb, *Game::health, *Game::flag;
 SDL_Renderer *Game::renderer;
 SDL_Rect Game::mapRect;
 bool Game::isServer;
@@ -16,11 +16,14 @@ int Game::renderInit()
 	mapTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, TILE_SIZE * MAP_SIZE, TILE_SIZE * MAP_SIZE);
 	genMapTexture(mapTexture);
 
+	backgroundTexture = Theme::backgroundTexture;
+
 	me.health = opponent.health = MAX_HEALTH;
 	me.flags = opponent.flags = 0;
 	me.pos.x = me.pos.y = TILE_SIZE;
 	opponent.pos.x = opponent.pos.y = TILE_SIZE * (MAP_SIZE - 2);
 	me.dir = 2, opponent.dir = 0;
+
 	if (!isServer)
 		swap(me, opponent);
 
@@ -372,8 +375,8 @@ string Game::finish(string message)
 	if (me.health == 0)
 		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOU WERE KILLED! YOU LOST :(";
 	if (opponent.flags == FLAG_LIMIT)
-		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES BEFORE YOU! YOU LOST :(";
+		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " MEDICINES BEFORE YOU! YOU LOST :(";
 	if (me.flags == FLAG_LIMIT)
-		return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " VACCINES FIRST! YOU WIN :D";
+		return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " MEDICINES FIRST! YOU WIN :D";
 	return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU KILLED YOUR OPPONENT! YOU WIN :D";
 }

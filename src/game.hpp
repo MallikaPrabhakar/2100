@@ -22,7 +22,7 @@ using namespace std;
 
 struct Game
 {
-	static SDL_Texture *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
+	static SDL_Texture *backgroundTexture, *mapTexture, *tile, *wall, *bullet, *bomb, *health, *flag;
 	static SDL_Renderer *renderer;
 	static SDL_Rect mapRect;
 	static bool isServer;

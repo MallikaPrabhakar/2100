@@ -49,8 +49,7 @@ int Intro::loadMedia()
 	if ((plotTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
 		return 2;
 
-	surface = IMG_Load(RULESIMG);
-	if ((rulesTexture = SDL_CreateTextureFromSurface(renderer, surface)) == NULL)
+	if ((rulesTexture = Theme::backgroundTexture) == NULL)
 		return 3;
 
 	return 0;
@@ -74,9 +73,15 @@ int Intro::displayPage(SDL_Texture *texture, vector<string> &vec)
 				}
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		if (vec==story){
+			for (int i = 0; i < vec.size(); ++i)
+			if (!vec[i].empty())
+				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i, {205,225,225});
+		} else {
 		for (int i = 0; i < vec.size(); ++i)
 			if (!vec[i].empty())
 				Fonts::displayText(renderer, vec[i].c_str(), 1, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i);
+		}
 		SDL_RenderPresent(renderer);
 	}
 }
@@ -88,6 +93,7 @@ int Intro::displayPlot()
 
 int Intro::displayRules()
 {
+	rulesTexture = Theme::backgroundTexture;
 	return displayPage(rulesTexture, rules);
 }
 
@@ -96,9 +102,9 @@ int Intro::displayStartingPage()
 	return displayPage(frontPageTexture, firstPage);
 }
 
-int Intro::initIntro(SDL_Renderer *srcRender)
+int Intro::initIntro(SDL_Renderer *srcRenderer)
 {
-	renderer = srcRender;
+	renderer = srcRenderer;
 	int ret = loadText();
 	if (ret != 0)
 		return ret;

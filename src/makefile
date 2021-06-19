@@ -25,7 +25,7 @@ font.o: font.cpp font.hpp theme.o
 sound.o: sound.cpp sound.hpp
 	g++ -c $(CFLAGS) sound.cpp
 
-intro.o: intro.cpp intro.hpp font.o sound.o game.hpp
+intro.o: intro.cpp intro.hpp font.o sound.o game.hpp theme.hpp
 	g++ -c $(CFLAGS) intro.cpp
 
 networking.o: networking.cpp networking.hpp

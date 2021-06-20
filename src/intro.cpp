@@ -95,7 +95,7 @@ bool Intro::crawlText(int index, vector<string> &lines)
 		return false;
 	for (int i = 0; i < FONTSCOUNT; ++i)
 		if (!lines[i + index].empty())
-			Fonts::displayText(renderer, lines[i + index].c_str(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i, i, THEME1_FONT);
+			Fonts::displayText(renderer, lines[i + index].c_str(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4 + 2 * OFFSET * i, i, {255,255,255});
 	return true;
 }
 

@@ -4,7 +4,7 @@
 #include "font.hpp"
 #include "sound.hpp"
 #include "theme.hpp"
-#include "intro.hpp"
+#include "modes.hpp"
 #include "menu.hpp"
 #include "networking.hpp"
 #include "map.hpp"
@@ -77,7 +77,7 @@ int main()
 	Theme::setTheme(1, renderer);
 
 	// init intro
-	if (Intro::initIntro(renderer) != 0)
+	if (Modes::initModes(renderer) != 0)
 	{
 		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
@@ -85,7 +85,7 @@ int main()
 		return 1;
 	}
 
-	// @TODO: better init menu stuff?
+	// @TODO: delete menu and move everything to modes
 	Menu::renderer = renderer;
 
 	// init game textures
@@ -100,7 +100,7 @@ int main()
 	// display intro page
 	while (true)
 	{
-		if (Intro::displayStartingPage() == 0)
+		if (Modes::displayFrontPage() == 0)
 			break;
 		if (Menu::exitMenu("START SCREEN") == -1)
 			handleExit(renderer, window);
@@ -109,7 +109,7 @@ int main()
 	// display story
 	while (true)
 	{
-		if (Intro::displayPlot() == 0)
+		if (Modes::displayStory() == 0)
 			break;
 		if (Menu::exitMenu("STORY") == -1)
 			handleExit(renderer, window);
@@ -118,7 +118,7 @@ int main()
 	// display rules
 	while (true)
 	{
-		if (Intro::displayRules() == 0)
+		if (Modes::displayRules() == 0)
 			break;
 		if (Menu::exitMenu("RULES") == -1)
 			handleExit(renderer, window);

@@ -1,4 +1,4 @@
-objects = theme.o font.o sound.o networking.o menu.o map.o game.o object.o intro.o main.o
+objects = theme.o font.o sound.o networking.o menu.o map.o game.o object.o modes.o main.o
 LIBS = -lSDL2_ttf -lSDL2_image -lSDL2_mixer
 CFLAGS = `sdl2-config --cflags`
 
@@ -10,10 +10,10 @@ install: game
 game: $(objects)
 	g++ -g $(objects) -o game `sdl2-config --libs` $(LIBS)
 
-main.o: main.cpp font.o theme.o networking.o menu.o map.o game.o intro.o
+main.o: main.cpp font.o theme.o networking.o menu.o map.o game.o modes.o
 	g++ -c $(CFLAGS) main.cpp
 
-menu.o: menu.cpp menu.hpp theme.o font.o map.o networking.o game.o intro.o
+menu.o: menu.cpp menu.hpp theme.o font.o map.o networking.o game.o modes.o
 	g++ -c $(CFLAGS) menu.cpp
 
 theme.o: theme.cpp theme.hpp
@@ -25,8 +25,8 @@ font.o: font.cpp font.hpp theme.o
 sound.o: sound.cpp sound.hpp
 	g++ -c $(CFLAGS) sound.cpp
 
-intro.o: intro.cpp intro.hpp theme.o font.o sound.o game.hpp
-	g++ -c $(CFLAGS) intro.cpp
+modes.o: modes.cpp modes.hpp theme.o font.o sound.o game.hpp
+	g++ -c $(CFLAGS) modes.cpp
 
 networking.o: networking.cpp networking.hpp
 	g++ -c $(CFLAGS) networking.cpp

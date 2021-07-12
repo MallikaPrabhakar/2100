@@ -30,7 +30,7 @@ struct Sound
 	static Mix_Chunk *start, *win, *lose, *correct, *incorrect, *spawnable, *spawn_flag, *shoot, *bombHit, *flagHit, *healthHit, *bulletHit;
 
 	static int initSounds();
-	static void playChunk(Mix_Chunk *chunk);
+	static void playChunk(Mix_Chunk *chunk = correct);
 	static void startMusic();
 	static void haltMusic();
 };

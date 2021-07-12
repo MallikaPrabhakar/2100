@@ -13,7 +13,7 @@ struct Network
 	static const int SOCKSIZE = sizeof(sockaddr_in);
 	static int sockfd, othersockfd;
 	static sockaddr_in Server, other;
-	static bool done;
+	static bool connected;
 	/*
 	 * error codes
 	 * 1 = unable to init socket

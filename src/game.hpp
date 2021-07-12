@@ -3,7 +3,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <algorithm>
 #include "object.hpp"
 #include "theme.hpp"
 #include "map.hpp"

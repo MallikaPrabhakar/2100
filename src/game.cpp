@@ -106,7 +106,7 @@ string Game::loopGame()
 		if (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
-				return finish("YOU LEFT THE GAME");
+				return Network::connected = 0, finish("YOU LEFT THE GAME");
 			else if (e.type == SDL_KEYDOWN)
 				handleKeyEvents(e.key.keysym.sym);
 		}

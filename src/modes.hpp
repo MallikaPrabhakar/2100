@@ -29,15 +29,14 @@ struct Modes
 	enum modes
 	{
 		FRONT_PAGE,
+		PLAYER,
 		MAIN_MENU,
 		THEME,
 		MAP,
 		CONNECT,
-		LOOK,
 		STORY,
 		RULES,
 		PLAY,
-		INIT,
 		QUIT = -1
 	};
 
@@ -45,15 +44,20 @@ struct Modes
 	static SDL_Renderer *renderer;
 	static SDL_Texture *frontPageTexture, *storyTexture, *renderTexture, *mapTexture;
 	static SDL_Rect mapRect;
-	static vector<string> story, rules, displayLines;
+	static vector<string> story, rules, displayLines, serverMenuLines, clientMenuLines;
 
 	static int displayStory();
 	static int displayFrontPage();
+	static int displayPlayerSelection();
 	static int displayRules();
 	static int themeMenu();
 	static int mapMenu();
 	static int connectMenu();
-	static int displayPage(function<bool(SDL_Event)> operation);
+	static int mainMenu();
+	static bool exitMenu(string exitMessage = "");
+	static string getModeName(modes mode);
+	static void reRender();
+	static int displayPage(function<int(SDL_Event)> operation);
 	static bool crawlText(int index);
 	static int loadMedia();
 	static int loadText();

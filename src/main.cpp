@@ -1,11 +1,11 @@
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 #include "font.hpp"
 #include "sound.hpp"
 #include "theme.hpp"
 #include "modes.hpp"
-#include "menu.hpp"
 #include "networking.hpp"
 #include "map.hpp"
 #include "game.hpp"
@@ -76,7 +76,7 @@ int main()
 	// init theme
 	Theme::setTheme(1, renderer);
 
-	// init intro
+	// init modes
 	if (Modes::initModes(renderer) != 0)
 	{
 		SDL_DestroyRenderer(renderer);
@@ -85,8 +85,7 @@ int main()
 		return 1;
 	}
 
-	// @TODO: delete menu and move everything to modes
-	Menu::renderer = renderer;
+	Modes::renderer = renderer;
 
 	// init game textures
 	if (Game::initTextures(renderer) != 0)
@@ -102,7 +101,7 @@ int main()
 	{
 		if (Modes::displayFrontPage() == 0)
 			break;
-		if (Menu::exitMenu("START SCREEN") == -1)
+		if (Modes::exitMenu())
 			handleExit(renderer, window);
 	}
 
@@ -111,7 +110,7 @@ int main()
 	{
 		if (Modes::displayStory() == 0)
 			break;
-		if (Menu::exitMenu("STORY") == -1)
+		if (Modes::exitMenu())
 			handleExit(renderer, window);
 	}
 
@@ -120,50 +119,35 @@ int main()
 	{
 		if (Modes::displayRules() == 0)
 			break;
-		if (Menu::exitMenu("RULES") == -1)
+		if (Modes::exitMenu())
 			handleExit(renderer, window);
 	}
 
 	// choose player (1 or 2)
 	while (true)
 	{
-		int player = Menu::whichPlayer();
-		if (player == -1)
-			if (Menu::exitMenu("PLAYER SELECTION SCREEN") == -1)
-				handleExit(renderer, window);
-			else
-				continue;
-
-		if (player == 1)
-		{
-			Game::isServer = true;
-			int ret = Network::makeServer();
-			if (ret != 0)
-			{
-				printf(ret == 1 ? "Could not init socket\n" : "Could not bind socket\n");
-				handleExit(renderer, window);
-			}
-			Map::setMap();
-		}
-		else
-			Game::isServer = false;
-		break;
+		int ret = Modes::displayPlayerSelection();
+		if (ret == 0)
+			break;
+		if (Modes::exitMenu(ret == -1 ? "" : ret == 1 ? "COULD NOT INIT SOCKET"
+													  : "COULD NOT BIND SOCKET"))
+			handleExit(renderer, window);
 	}
 
 	// menu + game + exit loop
 	while (true)
 	{
-		if (Menu::menuLoop() == 0)
+		if (Modes::mainMenu() == 0)
 		{
 			if (Game::renderInit() == 0)
-				if (Menu::exitMenu("MAIN MENU", Game::loopGame()) == -1)
+				if (Modes::exitMenu(Game::loopGame()))
 					handleExit(renderer, window);
 				else
 					continue;
-			else if (Menu::exitMenu("MAIN MENU", "UNABLE TO SEND/RECEIVE MAP") == -1)
+			else if (Modes::exitMenu("UNABLE TO SEND/RECEIVE MAP"))
 				handleExit(renderer, window);
 		}
-		else if (Menu::exitMenu("MAIN MENU") == -1)
+		else if (Modes::exitMenu())
 			handleExit(renderer, window);
 	}
 }

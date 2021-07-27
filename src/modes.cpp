@@ -160,8 +160,8 @@ int Modes::displayPlayerSelection()
 							   }
 							   else if (key == SDLK_2)
 								   return Game::isServer = 0, 1;
-								else if (key != SDLK_RETURN && key != SDLK_KP_ENTER && key != SDLK_ESCAPE)
-									return 3;
+							   else if (key != SDLK_RETURN && key != SDLK_KP_ENTER && key != SDLK_ESCAPE)
+								   return 3;
 						   }
 						   return 0;
 					   });
@@ -219,15 +219,20 @@ int Modes::connectMenu()
 					   {
 						   if (e.type == SDL_KEYDOWN)
 						   {
+							   int ret = 0;
 							   int key = e.key.keysym.sym;
 							   if ((key >= SDLK_0 && key <= SDLK_9) || key == SDLK_PERIOD)
-								   return displayLines[1] += key, 2;
+								   displayLines[1] += key, ret = 2;
 							   else if (key == SDLK_BACKSPACE)
 								   if (!displayLines[1].empty())
-									   return displayLines[1].pop_back(), 2;
+									   displayLines[1].pop_back(), ret = 2;
 								   else
-									   return 3;
-							   return key == SDLK_RETURN || key == SDLK_KP_ENTER ? 1 : key == SDLK_ESCAPE ? 0 : 3;
+									   ret = 3;
+							   reRender();
+							   if (ret)
+								   return ret;
+							   return key == SDLK_RETURN || key == SDLK_KP_ENTER ? 1 : key == SDLK_ESCAPE ? 0
+																										  : 3;
 						   }
 						   return 0;
 					   });
@@ -312,8 +317,6 @@ bool Modes::exitMenu(string exitMessage)
 						   if (e.type == SDL_KEYDOWN)
 						   {
 							   int key = e.key.keysym.sym;
-							   printf("%d\n", key);
-							   fflush(NULL);
 							   if (key == SDLK_g)
 								   return 1;
 							   else if (key == SDLK_q)

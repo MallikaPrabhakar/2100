@@ -128,7 +128,7 @@ int Modes::displayStory()
 {
 	mode = STORY, renderTexture = storyTexture, displayLines = story;
 	return displayPage([](SDL_Event e) -> int
-					   { return e.type == SDL_KEYDOWN && e.key.keysym.sym != SDLK_ESCAPE; });
+					   { return e.type == SDL_KEYDOWN; });
 }
 
 int Modes::displayRules()

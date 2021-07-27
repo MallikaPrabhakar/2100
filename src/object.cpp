@@ -8,7 +8,7 @@ unordered_map<pair<int, int>, Spawnable *> Spawnable::spawnables;
 
 Object::Object(int dir, SDL_Texture *texture)
 {
-	this->texture = texture;
+	this->texture = texture; // (*this).texture = texture;
 	this->dir = dir;
 }
 

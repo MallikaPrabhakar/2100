@@ -9,6 +9,7 @@ int Game::reloadTime;
 
 int Game::renderInit()
 {
+	initTextures(renderer);
 	if ((isServer ? Map::sendMap() : Map::recvMap()) != 0)
 		return -1;
 
@@ -27,7 +28,7 @@ int Game::renderInit()
 
 	Spawnable::healthsOnMap = Spawnable::flagsOnMap = 0, reloadTime = 0;
 	Spawnable::spawnables.clear();
-
+	printf("reached here\n");
 	return isServer ? recvPlayerInfo() : sendPlayerInfo();
 }
 
@@ -99,6 +100,7 @@ string Game::loopGame()
 {
 	Sound::playChunk(Sound::start);
 	SDL_Event e;
+	printf("here too\n");
 	while (true)
 	{
 		if (reloadTime)

@@ -367,10 +367,10 @@ string Game::finish(string message)
 	if (message != "")
 		return Sound::playChunk(Sound::lose), message;
 	if (me.health == 0)
-		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOU WERE KILLED! YOU LOST :(";
+		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOU DIED! YOU LOST :(";
 	if (opponent.flags == FLAG_LIMIT)
 		return Sound::playChunk(Sound::lose), SDL_Delay(1500), "YOUR OPPONENT COLLECTED " + to_string(FLAG_LIMIT) + " MEDICINES BEFORE YOU! YOU LOST :(";
 	if (me.flags == FLAG_LIMIT)
 		return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU COLLECTED " + to_string(FLAG_LIMIT) + " MEDICINES FIRST! YOU WIN :D";
-	return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOU KILLED YOUR OPPONENT! YOU WIN :D";
+	return Sound::playChunk(Sound::win), SDL_Delay(1500), "YOUR OPPONENT DIED! YOU WIN :D";
 }

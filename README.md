@@ -23,4 +23,3 @@ The game is about people obtaining covid solving pills i guess
 
 <https://unsplash.com/photos/EAgGqOiDDMg>
 <https://unsplash.com/photos/LNYdatC3znA>
-<https://unsplash.com/photos/MCDSvIISDOY>

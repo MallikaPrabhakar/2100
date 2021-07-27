@@ -19,10 +19,8 @@ The game is about people obtaining covid solving pills i guess
 4. [Random maze generator](https://github.com/keesiemeijer/maze-generator)
 5. [Sound](https://freesound.org/)
 
-### Resources
+### Resources for images
 
-<https://pixabay.com/illustrations/paper-stationery-parchment-old-68833/>
 <https://unsplash.com/photos/EAgGqOiDDMg>
-<https://unsplash.com/photos/e6pK_snssSY>
 <https://unsplash.com/photos/LNYdatC3znA>
 <https://unsplash.com/photos/MCDSvIISDOY>

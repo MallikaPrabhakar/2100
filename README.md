@@ -12,11 +12,11 @@ Observing the rise in COVID-19 cases all over the globe, we wanted to create a g
 
 ```sudo apt install libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0```
 
-4. Once you have the required dependencies, clone this repo and run the following command
+4. Once you have the required dependencies, clone this repo and run the following command:
 
 ```cd src && make install```
 
-5. If the installation is successful, you can run the game using the command
+5. If the installation is successful, you can run the game using the command:
 
 ```./game```
 
